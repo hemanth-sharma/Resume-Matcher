@@ -99,7 +99,8 @@
       "dropzoneSubtitle": "PDF, DOC, DOCX (Max 4 Mo)",
       "tryDifferentFile": "Essayer un autre fichier",
       "parsingFailedKeepOpen": "L'analyse par IA a échoué. Essayez un autre fichier ou fermez cette boîte de dialogue."
-    }
+    },
+    "atsScore": "Score ATS par rapport à l'offre"
   },
   "builder": {
     "title": "Créateur de CV",
@@ -450,7 +451,10 @@
       "effectiveHeaderFont": "Police des en-têtes",
       "effectiveBodyFont": "Police du corps",
       "compactHint": "Le mode compact resserre l'espacement et l'interligne. Les marges et la taille de police de base restent littérales.",
-      "resetDefaults": "Rétablir les valeurs par défaut"
+      "resetDefaults": "Rétablir les valeurs par défaut",
+      "onePage": "CV d'une page",
+      "onePageHint": "Compacte la mise en page et l'espacement. Pour les nouvelles adaptations, activez-le aussi sur la page Tailor pour condenser le contenu.",
+      "showPhoto": "Afficher la photo"
     },
     "personalInfoForm": {
       "placeholders": {
@@ -462,6 +466,19 @@
         "website": "portfolio.com",
         "linkedin": "linkedin.com/in/jean",
         "github": "github.com/jean"
+      },
+      "photo": {
+        "label": "Photo de profil (facultative)",
+        "hint": "Affichée quand le réglage photo est activé dans Format. Courante en Europe et en Asie ; souvent filtrée par les ATS américains.",
+        "previewAlt": "Aperçu de la photo de profil",
+        "upload": "Téléverser",
+        "replace": "Remplacer",
+        "remove": "Supprimer",
+        "errors": {
+          "format": "Format d'image non pris en charge. Utilisez JPEG, PNG ou WebP.",
+          "tooLarge": "La photo est trop volumineuse. Restez sous 1,5 Mo.",
+          "read": "Impossible de lire le fichier image. Réessayez."
+        }
       }
     },
     "leftPanel": {
@@ -610,6 +627,18 @@
       "timeout": "L'aperçu du CV a expiré après {minutes} minutes. Réessayez avec une fiche de poste plus courte ou une consigne plus simple.",
       "failedToPreview": "Impossible de prévisualiser le CV. Vérifiez votre clé API dans les paramètres, puis réessayez.",
       "failedToConfirm": "Impossible d'appliquer les modifications. Veuillez réessayer."
+    },
+    "onePage": {
+      "label": "CV d'une page",
+      "description": "Garde uniquement le contenu le plus pertinent et concis pour tenir sur une page"
+    },
+    "tokenInfo": {
+      "title": "Différences entre les modes (usage LLM)",
+      "intro": "Tous les modes exécutent le même pipeline (extraction des mots-clés, génération des diffs, raffinement multi-passes), donc l'usage de jetons est similaire. La différence porte sur l'étendue des modifications autorisées :",
+      "nudge": "reformulation minimale uniquement — aucun nouveau point, risque de dérive minimal",
+      "keywords": "reformule les points existants pour intégrer les mots-clés du poste — meilleur équilibre entre score ATS et véracité",
+      "full": "peut développer les points et en ajouter qui détaillent l'expérience existante — plus fort gain ATS, nécessite le plus de vérification",
+      "note": "Le mode ne change que les instructions d'édition, pas le nombre d'appels LLM : le coût reste à peu près identique."
     }
   },
   "settings": {
@@ -791,7 +820,8 @@
       "failedToLoad": "Impossible de charger les données du CV.",
       "failedToDelete": "Impossible de supprimer le CV. Veuillez réessayer."
     },
-    "titlePlaceholder": "Saisissez le titre du CV..."
+    "titlePlaceholder": "Saisissez le titre du CV...",
+    "atsScoreTitle": "Score ATS (pour ce poste)"
   },
   "preview": {
     "margins": "Marges",
@@ -1011,7 +1041,8 @@
       "roleUnknown": "Poste sans titre",
       "sharedResume": "CV partagé",
       "selectAria": "Sélectionner la candidature",
-      "dragAria": "Faire glisser pour réorganiser"
+      "dragAria": "Faire glisser pour réorganiser",
+      "atsScore": "Score ATS du CV adapté"
     },
     "modal": {
       "jobDescription": "Fiche de poste",
@@ -1021,7 +1052,8 @@
       "saveNotes": "Enregistrer les notes",
       "resumeUnavailable": "Le CV soumis n'est plus disponible.",
       "loadFailed": "Impossible de charger cette candidature.",
-      "editResume": "Modifier le CV"
+      "editResume": "Modifier le CV",
+      "atsScore": "Score ATS"
     },
     "bulk": {
       "selected": "{count} sélectionné(s)",
@@ -1068,6 +1100,33 @@
       "projectFollowUps": "Questions de suivi sur les projets",
       "skillGaps": "Écarts de compétences",
       "talkingPoints": "Arguments clés"
+    }
+  },
+  "atsCard": {
+    "title": "Détail du score ATS",
+    "improvementLabel": "Évolution par rapport au CV d'origine",
+    "baselineLabel": "CV d'origine",
+    "subScoresLabel": "Scores par composante",
+    "subScores": {
+      "keyword_match": "Correspondance des mots-clés",
+      "skills_coverage": "Couverture des compétences",
+      "semantic_similarity": "Alignement du contenu",
+      "experience_alignment": "Adéquation de l'expérience",
+      "education_match": "Correspondance de la formation",
+      "section_completeness": "Complétude des sections",
+      "formatting_quality": "Qualité de mise en forme",
+      "impact_quality": "Impact et réalisations"
+    },
+    "matchedKeywordsLabel": "Mots-clés correspondants",
+    "missingKeywordsLabel": "Mots-clés manquants",
+    "injectableKeywordsLabel": "Ajout possible (présents dans votre CV maître)",
+    "recommendationsLabel": "Recommandations",
+    "interpretations": {
+      "excellent": "Excellente correspondance",
+      "strong": "Bonne correspondance",
+      "moderate": "Correspondance modérée",
+      "weak": "Correspondance faible",
+      "poor": "Très faible correspondance"
     }
   }
 }

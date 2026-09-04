@@ -23,12 +23,16 @@ import {
   Sparkles,
   Pencil,
   MessagesSquare,
+  Gauge,
 } from 'lucide-react';
 import { EnrichmentModal } from '@/components/enrichment/enrichment-modal';
+import { ATSScoreCard } from '@/components/tailor/ats-score-card';
 import { useTranslations } from '@/lib/i18n';
 import { withLocalizedDefaultSections } from '@/lib/utils/section-helpers';
 import { useLanguage } from '@/lib/context/language-context';
 import { downloadBlobAsFile, openUrlInNewTab, sanitizeFilename } from '@/lib/utils/download';
+import type { ATSScore } from '@/components/common/resume_previewer_context';
+import type { TemplateSettings } from '@/lib/types/template-settings';
 
 type ProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed';
 
@@ -54,6 +58,8 @@ export default function ResumeViewerPage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editingTitleValue, setEditingTitleValue] = useState('');
   const [isTailoredResume, setIsTailoredResume] = useState(false);
+  const [atsScore, setAtsScore] = useState<ATSScore | null>(null);
+  const [templateSettings, setTemplateSettings] = useState<TemplateSettings | null>(null);
 
   const resumeId = params?.id as string;
 
@@ -78,6 +84,16 @@ export default function ResumeViewerPage() {
         // Capture title for editable display (always set to clear stale state)
         setResumeTitle(data.title ?? null);
         setIsTailoredResume(Boolean(data.parent_id));
+
+        // ATS score + per-resume template settings persisted on the resume row
+        const rawAts = data.ats_score as ATSScore | null | undefined;
+        setAtsScore(rawAts && typeof rawAts === 'object' ? rawAts : null);
+        const rawSettings = data.template_settings as TemplateSettings | null | undefined;
+        setTemplateSettings(
+          rawSettings && typeof rawSettings === 'object' && 'template' in rawSettings
+            ? rawSettings
+            : null
+        );
 
         // Prioritize processed_resume if available (structured JSON)
         if (data.processed_resume) {
@@ -181,14 +197,16 @@ export default function ResumeViewerPage() {
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const blob = await downloadResumePdf(resumeId, undefined, uiLanguage);
+      // Prefer the per-resume settings saved from the builder so the PDF
+      // matches what the user configured (template, margins, photo, …).
+      const blob = await downloadResumePdf(resumeId, templateSettings ?? undefined, uiLanguage);
       const filename = sanitizeFilename(resumeTitle, resumeId, 'resume');
       downloadBlobAsFile(blob, filename);
       setShowDownloadSuccessDialog(true);
     } catch (err) {
       console.error('Failed to download resume:', err);
       if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
-        const fallbackUrl = getResumePdfUrl(resumeId, undefined, uiLanguage);
+        const fallbackUrl = getResumePdfUrl(resumeId, templateSettings ?? undefined, uiLanguage);
         const didOpen = openUrlInNewTab(fallbackUrl);
         if (!didOpen) {
           alert(t('common.popupBlocked', { url: fallbackUrl }));
@@ -424,11 +442,28 @@ export default function ResumeViewerPage() {
           </div>
         )}
 
+        {/* ATS score panel for tailored resumes — the persisted score from
+            tailoring time, with the full breakdown so users can see how the
+            AI-tailored resume measures up against the job. */}
+        {isTailoredResume && atsScore && (
+          <div className="mb-8 no-print">
+            <div className="flex items-center gap-2 mb-3">
+              <Gauge className="w-4 h-4 text-blue-700" />
+              <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-ink">
+                {t('resumeViewer.atsScoreTitle')}
+              </h2>
+            </div>
+            <ATSScoreCard atsScore={atsScore} />
+          </div>
+        )}
+
         {/* Resume Viewer */}
         <div className="flex justify-center pb-4">
           <div className="resume-print w-full max-w-[250mm] shadow-sw-lg border-2 border-black bg-white">
             <Resume
               resumeData={localizedResumeData || resumeData}
+              settings={templateSettings ?? undefined}
+              locale={uiLanguage}
               additionalSectionLabels={{
                 technicalSkills: t('resume.additionalLabels.technicalSkills'),
                 languages: t('resume.additionalLabels.languages'),

@@ -112,6 +112,14 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
     onChange({ ...settings, showContactIcons: !settings.showContactIcons });
   };
 
+  const handleOnePageToggle = () => {
+    onChange({ ...settings, onePage: !settings.onePage });
+  };
+
+  const handleShowPhotoToggle = () => {
+    onChange({ ...settings, showPhoto: !settings.showPhoto });
+  };
+
   const handleAccentColorChange = (accentColor: AccentColor) => {
     onChange({ ...settings, accentColor });
   };
@@ -411,6 +419,55 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
               {t('builder.formatting.options')}
             </h4>
             <div className="space-y-3">
+              {/* One-Page Resume Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <button
+                  onClick={handleOnePageToggle}
+                  aria-checked={settings.onePage}
+                  role="switch"
+                  className={`relative w-10 h-5 border-2 transition-all ${
+                    settings.onePage ? 'bg-blue-700 border-blue-700' : 'bg-white border-steel-grey'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-3.5 h-3.5 bg-white border transition-all ${
+                      settings.onePage ? 'left-5 border-blue-700' : 'left-0.5 border-steel-grey'
+                    }`}
+                  />
+                </button>
+                <span className="font-mono text-xs text-ink-soft">
+                  {t('builder.formatting.onePage')}
+                </span>
+              </label>
+              {settings.onePage && (
+                <p className="font-mono text-[10px] text-steel-grey pl-[52px]">
+                  {t('builder.formatting.onePageHint')}
+                </p>
+              )}
+
+              {/* Show Photo Toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <button
+                  onClick={handleShowPhotoToggle}
+                  aria-checked={settings.showPhoto}
+                  role="switch"
+                  className={`relative w-10 h-5 border-2 transition-all ${
+                    settings.showPhoto
+                      ? 'bg-blue-700 border-blue-700'
+                      : 'bg-white border-steel-grey'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-3.5 h-3.5 bg-white border transition-all ${
+                      settings.showPhoto ? 'left-5 border-blue-700' : 'left-0.5 border-steel-grey'
+                    }`}
+                  />
+                </button>
+                <span className="font-mono text-xs text-ink-soft">
+                  {t('builder.formatting.showPhoto')}
+                </span>
+              </label>
+
               {/* Compact Mode Toggle */}
               <label className="flex items-center gap-3 cursor-pointer">
                 <button

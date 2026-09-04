@@ -1,6 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import { Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PersonalInfo } from '@/components/dashboard/resume-component';
@@ -11,14 +13,47 @@ interface PersonalInfoFormProps {
   onChange: (data: PersonalInfo) => void;
 }
 
+/** Max photo size before base64 encoding (the data URL is ~1.37x larger). */
+const MAX_PHOTO_BYTES = 1.5 * 1024 * 1024;
+const PHOTO_ACCEPTED = 'image/jpeg,image/jpg,image/png,image/webp';
+
 export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChange }) => {
   const { t } = useTranslations();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const handleChange = (field: keyof PersonalInfo, value: string) => {
     onChange({
       ...data,
       [field]: value,
     });
+  };
+
+  const handlePhotoSelected = (file: File | undefined) => {
+    setPhotoError(null);
+    if (!file) return;
+    if (!PHOTO_ACCEPTED.includes(file.type)) {
+      setPhotoError(t('builder.personalInfoForm.photo.errors.format'));
+      return;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      setPhotoError(t('builder.personalInfoForm.photo.errors.tooLarge'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        onChange({ ...data, photo: reader.result });
+      }
+    };
+    reader.onerror = () => setPhotoError(t('builder.personalInfoForm.photo.errors.read'));
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoError(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    onChange({ ...data, photo: null });
   };
 
   return (
@@ -149,6 +184,61 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
           />
         </div>
+      </div>
+
+      {/* Profile photo (rendered when the template's photo setting is on) */}
+      <div className="pt-2 border-t border-paper-tint space-y-2">
+        <Label
+          htmlFor="photo"
+          className="font-mono text-xs uppercase tracking-wider text-steel-grey"
+        >
+          {t('builder.personalInfoForm.photo.label')}
+        </Label>
+        <p className="font-mono text-[11px] text-steel-grey">
+          {t('builder.personalInfoForm.photo.hint')}
+        </p>
+        <div className="flex items-center gap-4">
+          {data.photo ? (
+            /* eslint-disable-next-line @next/next/no-img-element -- local data URL preview */
+            <img
+              src={data.photo}
+              alt={t('builder.personalInfoForm.photo.previewAlt')}
+              className="w-16 h-16 object-cover border border-black shrink-0"
+            />
+          ) : (
+            <div className="w-16 h-16 border border-dashed border-steel-grey flex items-center justify-center shrink-0">
+              <ImageIcon className="w-5 h-5 text-steel-grey" />
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            id="photo"
+            type="file"
+            accept={PHOTO_ACCEPTED}
+            className="hidden"
+            onChange={(e) => handlePhotoSelected(e.target.files?.[0])}
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              {data.photo
+                ? t('builder.personalInfoForm.photo.replace')
+                : t('builder.personalInfoForm.photo.upload')}
+            </Button>
+            {data.photo && (
+              <Button type="button" variant="outline" size="sm" onClick={handleRemovePhoto}>
+                <Trash2 className="w-3.5 h-3.5" />
+                {t('builder.personalInfoForm.photo.remove')}
+              </Button>
+            )}
+          </div>
+        </div>
+        {photoError && <p className="font-mono text-xs text-red-600">{photoError}</p>}
       </div>
     </div>
   );

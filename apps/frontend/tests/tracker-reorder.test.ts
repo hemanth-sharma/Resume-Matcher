@@ -21,6 +21,7 @@ function card(id: string, status: ApplicationStatus, position: number): Applicat
     position,
     created_at: '2026-01-01T00:00:00Z',
     updated_at: '2026-01-01T00:00:00Z',
+    ats_score: null,
   };
 }
 

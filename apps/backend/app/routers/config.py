@@ -263,6 +263,7 @@ async def get_feature_config() -> FeatureConfigResponse:
         enable_cover_letter=stored.get("enable_cover_letter", False),
         enable_outreach_message=stored.get("enable_outreach_message", False),
         enable_interview_prep=stored.get("enable_interview_prep", False),
+        default_photo=stored.get("default_photo"),  # <--- ADD THIS
     )
 
 
@@ -278,6 +279,8 @@ async def update_feature_config(request: FeatureConfigRequest) -> FeatureConfigR
         stored["enable_outreach_message"] = request.enable_outreach_message
     if request.enable_interview_prep is not None:
         stored["enable_interview_prep"] = request.enable_interview_prep
+    if request.default_photo is not None:  # <--- ADD THIS BLOCK
+        stored["default_photo"] = request.default_photo
 
     # Save config
     _save_config(stored)
@@ -286,6 +289,7 @@ async def update_feature_config(request: FeatureConfigRequest) -> FeatureConfigR
         enable_cover_letter=stored.get("enable_cover_letter", False),
         enable_outreach_message=stored.get("enable_outreach_message", False),
         enable_interview_prep=stored.get("enable_interview_prep", False),
+        default_photo=stored.get("default_photo"),
     )
 
 

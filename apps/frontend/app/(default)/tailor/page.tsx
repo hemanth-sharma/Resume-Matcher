@@ -17,7 +17,7 @@ import { fetchPromptConfig, type PromptOption } from '@/lib/api/config';
 import { getPreviewErrorMessage } from '@/lib/utils/preview-error';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useStatusCache } from '@/lib/context/status-cache';
-import { Loader2, ArrowLeft, AlertTriangle, Settings } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertTriangle, Settings, Info, FileDown } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { DiffPreviewModal } from '@/components/tailor/diff-preview-modal';
 import { ATSScoreCard } from '@/components/tailor/ats-score-card';
@@ -32,6 +32,7 @@ export default function TailorPage() {
   const [promptOptions, setPromptOptions] = useState<PromptOption[]>([]);
   const [selectedPromptId, setSelectedPromptId] = useState('keywords');
   const [promptLoading, setPromptLoading] = useState(false);
+  const [onePage, setOnePage] = useState(false);
   const hasUserSelectedPrompt = useRef(false);
   const missingDiffConfirmInFlight = useRef(false);
 
@@ -179,7 +180,7 @@ export default function TailorPage() {
       incrementJobs(); // Update cached counter
 
       // 2. Preview Resume
-      const result = await previewImproveResume(resumeId, jobId, selectedPromptId);
+      const result = await previewImproveResume(resumeId, jobId, selectedPromptId, onePage);
 
       if (!result?.data?.diff_summary || !result?.data?.detailed_changes) {
         console.warn('Diff data missing for tailor preview; requesting user confirmation.');
@@ -403,6 +404,66 @@ export default function TailorPage() {
             </div>
           </div>
 
+          {/* One-page option: condenses content during tailoring so the
+              generated resume fits a single page. */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={onePage}
+              onClick={() => setOnePage((v) => !v)}
+              disabled={isLoading}
+              className={`relative w-10 h-5 border-2 transition-all shrink-0 ${
+                onePage ? 'bg-blue-700 border-blue-700' : 'bg-white border-steel-grey'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 w-3.5 h-3.5 bg-white border transition-all ${
+                  onePage ? 'left-5 border-blue-700' : 'left-0.5 border-steel-grey'
+                }`}
+              />
+            </button>
+            <span className="flex items-center gap-1.5">
+              <FileDown className="w-4 h-4 text-ink-soft" />
+              <span className="font-mono text-xs text-ink-soft">{t('tailor.onePage.label')}</span>
+            </span>
+            <span className="font-mono text-[11px] text-steel-grey">
+              {t('tailor.onePage.description')}
+            </span>
+          </label>
+
+          {/* Token usage transparency for the three tailoring modes */}
+          <details className="border border-steel-grey bg-paper-tint px-4 py-3">
+            <summary className="flex items-center gap-2 cursor-pointer font-mono text-xs font-bold uppercase tracking-wider text-ink-soft">
+              <Info className="w-3.5 h-3.5" />
+              {t('tailor.tokenInfo.title')}
+            </summary>
+            <div className="mt-3 space-y-2 text-sm text-ink-soft">
+              <p>{t('tailor.tokenInfo.intro')}</p>
+              <ul className="space-y-1.5">
+                <li>
+                  <span className="font-mono text-xs font-bold uppercase">
+                    {t('tailor.promptOptions.nudge.label')}:
+                  </span>{' '}
+                  {t('tailor.tokenInfo.nudge')}
+                </li>
+                <li>
+                  <span className="font-mono text-xs font-bold uppercase">
+                    {t('tailor.promptOptions.keywords.label')}:
+                  </span>{' '}
+                  {t('tailor.tokenInfo.keywords')}
+                </li>
+                <li>
+                  <span className="font-mono text-xs font-bold uppercase">
+                    {t('tailor.promptOptions.full.label')}:
+                  </span>{' '}
+                  {t('tailor.tokenInfo.full')}
+                </li>
+              </ul>
+              <p className="text-xs text-steel-grey">{t('tailor.tokenInfo.note')}</p>
+            </div>
+          </details>
+
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-mono flex items-center gap-2">
               <span>!</span> {error}
@@ -437,10 +498,15 @@ export default function TailorPage() {
         </div>
       </div>
 
-      {/* ATS Score Breakdown — shown once a preview result is available */}
+      {/* ATS Score Breakdown — shown once a preview result is available.
+          Includes the original resume's baseline score so the user sees how
+          much the AI tailoring lifted the match. */}
       {pendingResult?.data?.ats_score && (
         <div className="w-full max-w-4xl mt-6">
-          <ATSScoreCard atsScore={pendingResult.data.ats_score} />
+          <ATSScoreCard
+            atsScore={pendingResult.data.ats_score}
+            baseline={pendingResult.data.baseline_ats_score ?? null}
+          />
         </div>
       )}
 

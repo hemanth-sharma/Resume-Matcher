@@ -99,7 +99,8 @@
       "dropzoneSubtitle": "PDF, DOC, DOCX (Máximo 4MB)",
       "tryDifferentFile": "Tentar outro arquivo",
       "parsingFailedKeepOpen": "A análise de IA falhou. Tente outro arquivo ou feche este diálogo."
-    }
+    },
+    "atsScore": "Pontuação ATS em relação à descrição da vaga"
   },
   "builder": {
     "title": "Criar Currículo",
@@ -450,7 +451,10 @@
       "effectiveHeaderFont": "Fonte do Cabeçalho",
       "effectiveBodyFont": "Fonte do Corpo",
       "compactHint": "O modo compacto reduz espaçamento e altura da linha. Margens e tamanho de fonte base permanecem literais.",
-      "resetDefaults": "Restaurar Padrões"
+      "resetDefaults": "Restaurar Padrões",
+      "onePage": "Currículo de uma página",
+      "onePageHint": "Compacta layout e espaçamento. Para novos ajustes, ative também na página Tailor para condensar o conteúdo.",
+      "showPhoto": "Mostrar foto"
     },
     "personalInfoForm": {
       "placeholders": {
@@ -462,6 +466,19 @@
         "website": "portfolio.com",
         "linkedin": "linkedin.com/in/joao",
         "github": "github.com/joao"
+      },
+      "photo": {
+        "label": "Foto de perfil (opcional)",
+        "hint": "Exibida quando a configuração de foto está ativada em Formatação. Comum na Europa e Ásia; geralmente filtrada por ATS dos EUA.",
+        "previewAlt": "Prévia da foto de perfil",
+        "upload": "Enviar",
+        "replace": "Substituir",
+        "remove": "Remover",
+        "errors": {
+          "format": "Formato de imagem não suportado. Use JPEG, PNG ou WebP.",
+          "tooLarge": "A foto é muito grande. Mantenha abaixo de 1,5 MB.",
+          "read": "Não foi possível ler o arquivo de imagem. Tente novamente."
+        }
       }
     },
     "leftPanel": {
@@ -610,6 +627,18 @@
       "failedToGenerate": "Não foi possível gerar o currículo. Verifique sua chave de API em Configurações e tente novamente.",
       "failedToPreview": "Não foi possível pré-visualizar o currículo. Verifique sua chave de API em Configurações e tente novamente.",
       "failedToConfirm": "Não foi possível aplicar as alterações. Tente novamente."
+    },
+    "onePage": {
+      "label": "Currículo de uma página",
+      "description": "Mantém apenas o conteúdo mais relevante e conciso para caber em uma página"
+    },
+    "tokenInfo": {
+      "title": "Diferenças entre os modos (uso de LLM)",
+      "intro": "Todos os modos executam o mesmo pipeline (extração de palavras-chave, geração de diffs, refinamento em múltiplas passagens), então o uso de tokens é semelhante. A diferença é quanto a IA pode editar:",
+      "nudge": "apenas reformulação mínima — sem novos tópicos, menor risco de desvio",
+      "keywords": "reformula tópicos existentes para incorporar palavras-chave da vaga — melhor equilíbrio entre ATS e veracidade",
+      "full": "pode expandir tópicos e adicionar outros que detalhem o trabalho existente — maior ganho de ATS, exige mais revisão",
+      "note": "O modo muda apenas as instruções de edição, não o número de chamadas ao LLM, então o custo permanece praticamente igual."
     }
   },
   "settings": {
@@ -791,7 +820,8 @@
       "failedToLoad": "Falha ao carregar dados do currículo.",
       "failedToDelete": "Falha ao excluir currículo. Por favor, tente novamente."
     },
-    "titlePlaceholder": "Digite o título do currículo..."
+    "titlePlaceholder": "Digite o título do currículo...",
+    "atsScoreTitle": "Pontuação ATS (para esta vaga)"
   },
   "preview": {
     "margins": "Margens",
@@ -1011,7 +1041,8 @@
       "roleUnknown": "Cargo sem título",
       "sharedResume": "Currículo compartilhado",
       "selectAria": "Selecionar candidatura",
-      "dragAria": "Arraste para reordenar"
+      "dragAria": "Arraste para reordenar",
+      "atsScore": "Pontuação ATS do currículo adaptado"
     },
     "modal": {
       "jobDescription": "Descrição da vaga",
@@ -1021,7 +1052,8 @@
       "saveNotes": "Salvar notas",
       "resumeUnavailable": "O currículo enviado não está mais disponível.",
       "loadFailed": "Não foi possível carregar esta candidatura.",
-      "editResume": "Editar currículo"
+      "editResume": "Editar currículo",
+      "atsScore": "Pontuação ATS"
     },
     "bulk": {
       "selected": "{count} selecionada(s)",
@@ -1068,6 +1100,33 @@
       "projectFollowUps": "Perguntas sobre projetos",
       "skillGaps": "Lacunas de habilidades",
       "talkingPoints": "Pontos de conversa"
+    }
+  },
+  "atsCard": {
+    "title": "Detalhamento da pontuação ATS",
+    "improvementLabel": "Alteração em relação ao currículo original",
+    "baselineLabel": "Currículo original",
+    "subScoresLabel": "Pontos por componente",
+    "subScores": {
+      "keyword_match": "Correspondência de palavras-chave",
+      "skills_coverage": "Cobertura de habilidades",
+      "semantic_similarity": "Alinhamento de conteúdo",
+      "experience_alignment": "Adequação de experiência",
+      "education_match": "Correspondência de formação",
+      "section_completeness": "Completude das seções",
+      "formatting_quality": "Qualidade de formatação",
+      "impact_quality": "Impacto e realizações"
+    },
+    "matchedKeywordsLabel": "Palavras-chave correspondidas",
+    "missingKeywordsLabel": "Palavras-chave ausentes",
+    "injectableKeywordsLabel": "Seguro adicionar (no seu currículo mestre)",
+    "recommendationsLabel": "Recomendações",
+    "interpretations": {
+      "excellent": "Excelente correspondência",
+      "strong": "Boa correspondência",
+      "moderate": "Correspondência moderada",
+      "weak": "Correspondência fraca",
+      "poor": "Correspondência muito fraca"
     }
   }
 }

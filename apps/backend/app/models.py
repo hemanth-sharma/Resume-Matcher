@@ -48,6 +48,14 @@ class Resume(Base):
     # omitted entirely when None. The facade reproduces that by only emitting
     # the key when this column is non-null.
     original_markdown: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Full ATS score breakdown (dict) captured when the resume was tailored:
+    # overall_score, sub_scores, missing/injectable keywords, recommendations…
+    # NULL for master resumes that were never scored against a job.
+    ats_score: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Per-resume template settings (template id, page size, margins, fonts,
+    # one-page/photo toggles) so every surface (builder, viewer, PDF) renders
+    # the same look without relying on browser localStorage.
+    template_settings: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[str] = mapped_column(String, default=_utcnow_iso)
     updated_at: Mapped[str] = mapped_column(String, default=_utcnow_iso)
 

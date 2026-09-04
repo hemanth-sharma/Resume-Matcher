@@ -52,6 +52,10 @@ export interface TemplateSettings {
   compactMode: boolean; // Apply tighter spacing across the board
   showContactIcons: boolean; // Show icons next to contact info
   accentColor: AccentColor; // Accent color for Modern template
+  /** Condense content + tighten layout so the resume fits a single page. */
+  onePage: boolean;
+  /** Render the personalInfo photo (when one is set) in the resume header. */
+  showPhoto: boolean;
 }
 
 /**
@@ -66,6 +70,8 @@ export const DEFAULT_TEMPLATE_SETTINGS: TemplateSettings = {
   compactMode: false,
   showContactIcons: false,
   accentColor: 'blue',
+  onePage: false,
+  showPhoto: false,
 };
 
 /**

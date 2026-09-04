@@ -99,7 +99,8 @@
       "dropzoneSubtitle": "PDF、DOC、DOCX（最大 4MB）",
       "tryDifferentFile": "尝试其他文件",
       "parsingFailedKeepOpen": "AI 解析失败。请尝试其他文件，或关闭此对话框。"
-    }
+    },
+    "atsScore": "针对该职位描述的 ATS 评分"
   },
   "builder": {
     "title": "简历生成器",
@@ -450,7 +451,10 @@
       "effectiveHeaderFont": "标题字体",
       "effectiveBodyFont": "正文字体",
       "compactHint": "紧凑模式会收紧间距与行高；页边距与正文字号保持不变。",
-      "resetDefaults": "恢复默认设置"
+      "resetDefaults": "恢复默认设置",
+      "onePage": "单页简历",
+      "onePageHint": "收紧版面与间距。新生成定制简历时，请在定制页面同时开启该选项以压缩内容。",
+      "showPhoto": "显示照片"
     },
     "personalInfoForm": {
       "placeholders": {
@@ -462,6 +466,19 @@
         "website": "portfolio.com",
         "linkedin": "linkedin.com/in/zhangsan",
         "github": "github.com/zhangsan"
+      },
+      "photo": {
+        "label": "个人照片（可选）",
+        "hint": "在“格式”中启用照片设置后显示。欧洲和亚洲常见；美国 ATS 通常会过滤。",
+        "previewAlt": "个人照片预览",
+        "upload": "上传",
+        "replace": "更换",
+        "remove": "移除",
+        "errors": {
+          "format": "不支持的图片格式，请使用 JPEG、PNG 或 WebP。",
+          "tooLarge": "照片过大，请控制在 1.5 MB 以内。",
+          "read": "无法读取图片文件，请重试。"
+        }
       }
     },
     "leftPanel": {
@@ -610,6 +627,18 @@
       "failedToGenerate": "无法生成简历。请在设置中检查 API 密钥后重试。",
       "failedToPreview": "无法预览简历。请在设置中检查 API 密钥后重试。",
       "failedToConfirm": "无法应用更改。请重试。"
+    },
+    "onePage": {
+      "label": "单页简历",
+      "description": "仅保留最相关的精炼内容，使简历控制在一页内"
+    },
+    "tokenInfo": {
+      "title": "各定制模式的区别（LLM 用量）",
+      "intro": "所有模式都运行相同的流水线（关键词提取、差异生成、多轮优化），因此 token 消耗相近。区别在于 AI 被允许修改的程度：",
+      "nudge": "仅做最小限度的措辞调整——不新增条目，偏离风险最低",
+      "keywords": "改写现有条目以融入职位关键词——ATS 提升与真实性的最佳平衡",
+      "full": "可以扩展条目并添加对现有工作的深入描述——ATS 提升最大，但需要最多人工审阅",
+      "note": "模式只会改变编辑指令，不会改变 LLM 调用次数，因此成本基本相同。"
     }
   },
   "settings": {
@@ -791,7 +820,8 @@
       "failedToLoad": "加载简历数据失败。",
       "failedToDelete": "删除简历失败，请重试。"
     },
-    "titlePlaceholder": "输入简历标题..."
+    "titlePlaceholder": "输入简历标题...",
+    "atsScoreTitle": "ATS 评分（针对该职位）"
   },
   "preview": {
     "margins": "页边距",
@@ -1011,7 +1041,8 @@
       "roleUnknown": "未命名职位",
       "sharedResume": "共享简历",
       "selectAria": "选择申请",
-      "dragAria": "拖动以重新排序"
+      "dragAria": "拖动以重新排序",
+      "atsScore": "定制简历的 ATS 评分"
     },
     "modal": {
       "jobDescription": "职位描述",
@@ -1021,7 +1052,8 @@
       "saveNotes": "保存备注",
       "resumeUnavailable": "所投递的简历已不可用。",
       "loadFailed": "无法加载此申请。",
-      "editResume": "编辑简历"
+      "editResume": "编辑简历",
+      "atsScore": "ATS 评分"
     },
     "bulk": {
       "selected": "已选择 {count} 项",
@@ -1068,6 +1100,33 @@
       "projectFollowUps": "项目追问",
       "skillGaps": "技能差距",
       "talkingPoints": "沟通要点"
+    }
+  },
+  "atsCard": {
+    "title": "ATS 评分明细",
+    "improvementLabel": "与原始简历相比的变化",
+    "baselineLabel": "原始简历",
+    "subScoresLabel": "各维度得分",
+    "subScores": {
+      "keyword_match": "关键词匹配",
+      "skills_coverage": "技能覆盖度",
+      "semantic_similarity": "内容契合度",
+      "experience_alignment": "经验匹配度",
+      "education_match": "学历匹配",
+      "section_completeness": "版块完整性",
+      "formatting_quality": "排版质量",
+      "impact_quality": "影响力与成果"
+    },
+    "matchedKeywordsLabel": "已匹配关键词",
+    "missingKeywordsLabel": "缺失关键词",
+    "injectableKeywordsLabel": "可安全添加（主简历中已有）",
+    "recommendationsLabel": "改进建议",
+    "interpretations": {
+      "excellent": "极佳匹配",
+      "strong": "良好匹配",
+      "moderate": "中等匹配",
+      "weak": "匹配较弱",
+      "poor": "匹配很差"
     }
   }
 }

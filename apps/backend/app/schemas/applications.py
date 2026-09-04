@@ -37,6 +37,9 @@ class ApplicationResponse(BaseModel):
     position: int
     created_at: str
     updated_at: str
+    # Overall ATS score (0-100) of the applied resume against this job.
+    # None when the resume was never scored or has been deleted.
+    ats_score: float | None = None
 
 
 class ApplicationDetailResponse(ApplicationResponse):
@@ -48,6 +51,9 @@ class ApplicationDetailResponse(ApplicationResponse):
 
     job_content: str | None = None
     resume: dict[str, Any] | None = None
+    # Full ATS score breakdown of the applied resume (sub-scores, missing
+    # keywords, recommendations) — powers the detail-modal score panel.
+    ats_breakdown: dict[str, Any] | None = None
 
 
 class ApplicationListResponse(BaseModel):

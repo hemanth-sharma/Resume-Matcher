@@ -99,7 +99,8 @@
       "dropzoneSubtitle": "PDF, DOC, DOCX (최대 4MB)",
       "tryDifferentFile": "다른 파일 시도",
       "parsingFailedKeepOpen": "AI 분석에 실패했습니다. 다른 파일을 시도하거나 이 대화상자를 닫으세요."
-    }
+    },
+    "atsScore": "직무 기술서 대비 ATS 점수"
   },
   "builder": {
     "title": "이력서 빌더",
@@ -430,7 +431,10 @@
       "effectiveHeaderFont": "제목 글꼴",
       "effectiveBodyFont": "본문 글꼴",
       "compactHint": "컴팩트 모드는 간격과 줄 높이를 좁힙니다. 여백과 기본 글꼴 크기는 그대로 유지됩니다.",
-      "resetDefaults": "기본값으로 재설정"
+      "resetDefaults": "기본값으로 재설정",
+      "onePage": "한 페이지 이력서",
+      "onePageHint": "레이아웃과 간격을 줄입니다. 새로 맞춤 생성 시 Tailor 페이지에서도 켜면 내용 자체도 압축됩니다.",
+      "showPhoto": "사진 표시"
     },
     "personalInfoForm": {
       "placeholders": {
@@ -442,6 +446,19 @@
         "website": "portfolio.com",
         "linkedin": "linkedin.com/in/john",
         "github": "github.com/john"
+      },
+      "photo": {
+        "label": "프로필 사진(선택)",
+        "hint": "서식에서 사진 설정을 켜면 표시됩니다. 유럽과 아시아에서는 일반적이며 미국 ATS에서는 종종 제외됩니다.",
+        "previewAlt": "프로필 사진 미리보기",
+        "upload": "업로드",
+        "replace": "교체",
+        "remove": "제거",
+        "errors": {
+          "format": "지원하지 않는 이미지 형식입니다. JPEG, PNG 또는 WebP를 사용하세요.",
+          "tooLarge": "사진이 너무 큽니다. 1.5MB 이하로 유지하세요.",
+          "read": "이미지 파일을 읽을 수 없습니다. 다시 시도하세요."
+        }
       }
     },
     "leftPanel": {
@@ -610,6 +627,18 @@
       "timeout": "이력서 미리보기가 {minutes}분 후에 시간 초과되었습니다. 더 짧은 채용 공고나 더 간단한 프롬프트로 다시 시도해 주세요.",
       "failedToPreview": "이력서를 미리 볼 수 없습니다. 설정에서 API 키를 확인한 후 다시 시도하세요.",
       "failedToConfirm": "변경 사항을 적용할 수 없습니다. 다시 시도해 주세요."
+    },
+    "onePage": {
+      "label": "한 페이지 이력서",
+      "description": "가장 관련성 높은 간결한 내용만 남겨 한 페이지에 맞춥니다"
+    },
+    "tokenInfo": {
+      "title": "맞춤 모드의 차이(LLM 사용량)",
+      "intro": "모든 모드는 동일한 파이프라인(키워드 추출, diff 생성, 다중 패스 정제)을 실행하므로 토큰 사용량은 비슷합니다. 차이는 AI가 편집할 수 있는 정도입니다:",
+      "nudge": "최소한의 표현 수정만 — 새 불릿 없음, 왜곡 위험 최소",
+      "keywords": "기존 불릿을 수정해 직무 키워드를 반영 — ATS 향상과 정확성의 최적 균형",
+      "full": "불릿 확장 및 기존 경험을 심화하는 항목 추가 가능 — ATS 향상이 가장 크지만 검토가 가장 필요",
+      "note": "모드는 편집 지시만 바꾸고 LLM 호출 횟수는 같으므로 비용은 거의 동일합니다."
     }
   },
   "settings": {
@@ -791,7 +820,8 @@
       "failedToLoad": "이력서 데이터를 불러오지 못했습니다.",
       "failedToDelete": "이력서 삭제에 실패했습니다. 다시 시도해 주세요."
     },
-    "titlePlaceholder": "이력서 제목을 입력하세요..."
+    "titlePlaceholder": "이력서 제목을 입력하세요...",
+    "atsScoreTitle": "ATS 점수(이 직무 대비)"
   },
   "preview": {
     "margins": "여백",
@@ -1011,7 +1041,8 @@
       "roleUnknown": "직무명 없음",
       "sharedResume": "공유된 이력서",
       "selectAria": "지원 선택",
-      "dragAria": "드래그하여 순서 변경"
+      "dragAria": "드래그하여 순서 변경",
+      "atsScore": "맞춤 이력서의 ATS 점수"
     },
     "modal": {
       "jobDescription": "채용 공고",
@@ -1021,7 +1052,8 @@
       "saveNotes": "메모 저장",
       "resumeUnavailable": "지원에 사용한 이력서를 더 이상 사용할 수 없습니다.",
       "loadFailed": "이 지원 정보를 불러올 수 없습니다.",
-      "editResume": "이력서 편집"
+      "editResume": "이력서 편집",
+      "atsScore": "ATS 점수"
     },
     "bulk": {
       "selected": "{count}개 선택됨",
@@ -1068,6 +1100,33 @@
       "projectFollowUps": "프로젝트 후속 질문",
       "skillGaps": "역량 격차",
       "talkingPoints": "핵심 포인트"
+    }
+  },
+  "atsCard": {
+    "title": "ATS 점수 상세",
+    "improvementLabel": "원본 이력서 대비 변화",
+    "baselineLabel": "원본 이력서",
+    "subScoresLabel": "구성 요소 점수",
+    "subScores": {
+      "keyword_match": "키워드 일치",
+      "skills_coverage": "스킬 커버리지",
+      "semantic_similarity": "콘텐츠 정합도",
+      "experience_alignment": "경력 적합도",
+      "education_match": "학력 일치",
+      "section_completeness": "섹션 완전성",
+      "formatting_quality": "서식 품질",
+      "impact_quality": "성과와 임팩트"
+    },
+    "matchedKeywordsLabel": "일치한 키워드",
+    "missingKeywordsLabel": "누락된 키워드",
+    "injectableKeywordsLabel": "안전하게 추가 가능(마스터 이력서에 있음)",
+    "recommendationsLabel": "개선 권장 사항",
+    "interpretations": {
+      "excellent": "훌륭한 일치",
+      "strong": "좋은 일치",
+      "moderate": "보통 일치",
+      "weak": "약한 일치",
+      "poor": "매우 약한 일치"
     }
   }
 }

@@ -3,7 +3,7 @@
 import copy
 import re
 from enum import Enum
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -148,6 +148,9 @@ class PersonalInfo(BaseModel):
     website: str | None = None
     linkedin: str | None = None
     github: str | None = None
+    # Optional profile photo (data URL) rendered when the template's photo
+    # setting is enabled. Keep optional so existing resumes are unaffected.
+    photo: str | None = None
 
 
 class Experience(BaseModel):
@@ -481,6 +484,10 @@ class ResumeFetchData(BaseModel):
     interview_prep: InterviewPrepData | None = None
     parent_id: str | None = None  # For determining if resume is tailored
     title: str | None = None
+    # ATS score captured when this resume was tailored (None for master resumes)
+    ats_score: dict[str, Any] | None = None
+    # Per-resume template settings (template, page size, margins, fonts, …)
+    template_settings: dict[str, Any] | None = None
 
 
 class ResumeFetchResponse(BaseModel):
@@ -501,6 +508,8 @@ class ResumeSummary(BaseModel):
     created_at: str
     updated_at: str
     title: str | None = None
+    # Overall ATS score (0-100) of the tailored resume against its job, if any
+    ats_score: dict[str, Any] | None = None
 
 
 class ResumeListResponse(BaseModel):
@@ -533,6 +542,9 @@ class ImproveResumeRequest(BaseModel):
     resume_id: str
     job_id: str
     prompt_id: str | None = None
+    # When true, the tailoring prompts instruct the LLM to condense the resume
+    # so it fits a single page (fewer/more concise bullets, trimmed sections).
+    one_page: bool = False
 
 
 class ImprovementSuggestion(BaseModel):
@@ -575,7 +587,12 @@ class ResumeDiffSummary(BaseModel):
 
 
 class ATSSubScores(BaseModel):
-    """Individual component scores that make up the ATS overall score."""
+    """Individual component scores that make up the ATS overall score.
+
+    The first three are the legacy components (kept for older clients); the
+    rest were added by the industry-grade scoring engine and default to 0 so
+    old payloads still validate.
+    """
 
     keyword_match: float = Field(
         default=0.0, ge=0.0, le=100.0, description="Keyword match % (0–100)"
@@ -589,6 +606,36 @@ class ATSSubScores(BaseModel):
         le=100.0,
         description="Key resume sections present (0–100)",
     )
+    semantic_similarity: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=100.0,
+        description="TF-IDF cosine between JD requirements and resume text (0–100)",
+    )
+    experience_alignment: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=100.0,
+        description="Years-of-experience and seniority vs JD requirements (0–100)",
+    )
+    education_match: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=100.0,
+        description="Degree tier vs JD education requirements (0–100)",
+    )
+    formatting_quality: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=100.0,
+        description="Parser-friendliness: dates, bullets, lengths (0–100)",
+    )
+    impact_quality: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=100.0,
+        description="Quantified achievements and action verbs (0–100)",
+    )
 
 
 class ATSScore(BaseModel):
@@ -601,6 +648,10 @@ class ATSScore(BaseModel):
         description="Weighted composite ATS score (0–100)",
     )
     sub_scores: ATSSubScores = Field(default_factory=ATSSubScores)
+    matched_keywords: list[str] = Field(
+        default_factory=list,
+        description="Job keywords present in the tailored resume",
+    )
     missing_keywords: list[str] = Field(
         default_factory=list,
         description="Job keywords absent from the tailored resume",
@@ -612,6 +663,14 @@ class ATSScore(BaseModel):
     recommendations: list[str] = Field(
         default_factory=list,
         description="Actionable suggestions to improve the ATS score",
+    )
+    interpretation: str = Field(
+        default="unknown",
+        description="Score band: excellent / strong / moderate / weak / poor",
+    )
+    details: dict[str, Any] | None = Field(
+        default=None,
+        description="Per-component diagnostics (missing required skills, years, …)",
     )
 
 
@@ -665,6 +724,10 @@ class ImproveResumeData(BaseModel):
 
     # ATS score breakdown
     ats_score: "ATSScore | None" = None
+
+    # Baseline ATS score of the ORIGINAL resume against the same job — lets the
+    # UI show how much the tailoring actually improved the match.
+    baseline_ats_score: "ATSScore | None" = None
 
     # Warning and status fields for transparency
     warnings: list[str] = Field(default_factory=list)
@@ -725,6 +788,7 @@ class FeatureConfigRequest(BaseModel):
     enable_cover_letter: bool | None = None
     enable_outreach_message: bool | None = None
     enable_interview_prep: bool | None = None
+    default_photo: Optional[str] = None  
 
 
 class FeatureConfigResponse(BaseModel):
@@ -733,6 +797,7 @@ class FeatureConfigResponse(BaseModel):
     enable_cover_letter: bool = False
     enable_outreach_message: bool = False
     enable_interview_prep: bool = False
+    default_photo: Optional[str] = None  
 
 
 class LanguageConfigRequest(BaseModel):
@@ -851,6 +916,19 @@ class UpdateTitleRequest(BaseModel):
     """Request to update resume title."""
 
     title: str
+
+
+class UpdateTemplateSettingsRequest(BaseModel):
+    """Request to persist per-resume template settings.
+
+    The settings dict mirrors the frontend ``TemplateSettings`` type
+    (template, pageSize, margins, spacing, fontSize, compactMode,
+    showContactIcons, accentColor, onePage, showPhoto). Values are stored
+    as-is so the frontend stays the source of truth for shape; the backend
+    only sanity-checks the envelope.
+    """
+
+    template_settings: dict[str, Any] = Field(default_factory=dict)
 
 
 class ResetDatabaseRequest(BaseModel):

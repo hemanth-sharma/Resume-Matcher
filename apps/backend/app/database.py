@@ -143,6 +143,8 @@ class Database:
             "outreach_message": row.outreach_message,
             "interview_prep": row.interview_prep,
             "title": row.title,
+            "ats_score": row.ats_score,
+            "template_settings": row.template_settings,
             "created_at": row.created_at,
             "updated_at": row.updated_at,
         }
@@ -208,6 +210,8 @@ class Database:
         title: str | None = None,
         original_markdown: str | None = None,
         interview_prep: str | None = None,
+        ats_score: dict[str, Any] | None = None,
+        template_settings: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Create a new resume entry.
 
@@ -231,6 +235,8 @@ class Database:
                     interview_prep=interview_prep,
                     title=title,
                     original_markdown=original_markdown,
+                    ats_score=ats_score,
+                    template_settings=template_settings,
                     created_at=now,
                     updated_at=now,
                 )
@@ -250,6 +256,8 @@ class Database:
             "outreach_message": outreach_message,
             "interview_prep": interview_prep,
             "title": title,
+            "ats_score": ats_score,
+            "template_settings": template_settings,
             "created_at": now,
             "updated_at": now,
         }
@@ -577,20 +585,61 @@ class Database:
             return self._application_to_dict(row)
 
     async def list_applications(self, status: str | None = None) -> list[dict[str, Any]]:
-        """List applications ordered by (status, position)."""
+        """List applications ordered by (status, position).
+
+        Each card is enriched with the applied resume's ATS score (overall,
+        0-100, or None when the resume was never scored/deleted) so the Kanban
+        board can surface resume quality directly on the card.
+        """
         async with self._session() as session:
             stmt = select(Application)
             if status is not None:
                 stmt = stmt.where(Application.status == status)
             stmt = stmt.order_by(Application.status, Application.position)
             result = await session.execute(stmt)
-            return [self._application_to_dict(row) for row in result.scalars().all()]
+            applications = [
+                self._application_to_dict(row) for row in result.scalars().all()
+            ]
+
+            resume_ids = {app["resume_id"] for app in applications}
+            if resume_ids:
+                score_rows = await session.execute(
+                    select(Resume.resume_id, Resume.ats_score).where(
+                        Resume.resume_id.in_(resume_ids)
+                    )
+                )
+                score_map: dict[str, Any] = {
+                    resume_id: ats for resume_id, ats in score_rows.all()
+                }
+                for app in applications:
+                    ats = score_map.get(app["resume_id"])
+                    if isinstance(ats, dict):
+                        overall = ats.get("overall_score")
+                        app["ats_score"] = (
+                            float(overall) if isinstance(overall, (int, float)) else None
+                        )
+                    else:
+                        app["ats_score"] = None
+            return applications
 
     async def get_application(self, application_id: str) -> dict[str, Any] | None:
-        """Get an application by ID."""
+        """Get an application by ID (with the applied resume's full ATS breakdown)."""
         async with self._session() as session:
             row = await session.get(Application, application_id)
-            return self._application_to_dict(row) if row else None
+            if row is None:
+                return None
+            doc = self._application_to_dict(row)
+            score_row = await session.execute(
+                select(Resume.ats_score).where(Resume.resume_id == row.resume_id)
+            )
+            ats = score_row.scalar_one_or_none()
+            if isinstance(ats, dict):
+                overall = ats.get("overall_score")
+                doc["ats_score"] = (
+                    float(overall) if isinstance(overall, (int, float)) else None
+                )
+                doc["ats_breakdown"] = ats
+            return doc
 
     async def update_application(
         self, application_id: str, updates: dict[str, Any]

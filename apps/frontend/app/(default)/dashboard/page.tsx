@@ -18,6 +18,7 @@ import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import Plus from 'lucide-react/dist/esm/icons/plus';
 import Settings from 'lucide-react/dist/esm/icons/settings';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
+import Gauge from 'lucide-react/dist/esm/icons/gauge';
 
 import {
   fetchResume,
@@ -495,6 +496,20 @@ export default function DashboardPage() {
           const title =
             resume.title || resume.jobSnippet || resume.filename || t('dashboard.tailoredResume');
           const color = cardPalette[hashTitle(title) % cardPalette.length];
+          const atsOverall =
+            typeof resume.ats_score?.overall_score === 'number'
+              ? (resume.ats_score.overall_score as number)
+              : null;
+          const atsChipClass =
+            atsOverall === null
+              ? ''
+              : atsOverall >= 80
+                ? 'bg-green-100 text-green-800 border-green-700'
+                : atsOverall >= 60
+                  ? 'bg-yellow-100 text-yellow-800 border-yellow-700'
+                  : atsOverall >= 40
+                    ? 'bg-orange-100 text-orange-800 border-orange-700'
+                    : 'bg-red-100 text-red-800 border-red-700';
           return (
             <Card
               key={resume.resume_id}
@@ -510,9 +525,19 @@ export default function DashboardPage() {
                   >
                     <span className="font-mono font-bold">{getMonogram(title)}</span>
                   </div>
-                  <span className="font-mono text-xs text-steel-grey uppercase">
-                    {resume.processing_status}
-                  </span>
+                  {atsOverall !== null ? (
+                    <span
+                      className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums ${atsChipClass}`}
+                      title={t('dashboard.atsScore')}
+                    >
+                      <Gauge className="h-3 w-3" />
+                      {Math.round(atsOverall)}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-xs text-steel-grey uppercase">
+                      {resume.processing_status}
+                    </span>
+                  )}
                 </div>
                 <CardTitle className="text-lg">
                   <span className="block font-serif text-base font-bold leading-tight mb-1 w-full line-clamp-2">

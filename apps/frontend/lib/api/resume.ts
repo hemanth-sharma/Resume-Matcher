@@ -18,6 +18,7 @@ interface ProcessedResume {
     website?: string | null;
     linkedin?: string | null;
     github?: string | null;
+    photo?: string | null;
   };
   summary?: string;
   workExperience?: Array<{
@@ -71,6 +72,10 @@ interface ResumeResponse {
     interview_prep?: InterviewPrepData | null;
     parent_id?: string | null; // For determining if resume is tailored
     title?: string | null;
+    /** Persisted ATS score (with job_id/computed_at context) if scored. */
+    ats_score?: Record<string, unknown> | null;
+    /** Per-resume template settings saved from the builder. */
+    template_settings?: Record<string, unknown> | null;
   };
 }
 
@@ -110,6 +115,8 @@ export interface ResumeListItem {
   created_at: string;
   updated_at: string;
   title?: string | null;
+  /** Persisted ATS score payload (overall_score, …) if the resume was scored. */
+  ats_score?: Record<string, unknown> | null;
   // Optional lightweight snippet of associated job description (populated client-side)
   jobSnippet?: string;
 }
@@ -160,12 +167,14 @@ export async function uploadJobDescriptions(
 export async function improveResume(
   resumeId: string,
   jobId: string,
-  promptId?: string
+  promptId?: string,
+  onePage = false
 ): Promise<ImprovedResult> {
   return postImprove('/resumes/improve', {
     resume_id: resumeId,
     job_id: jobId,
     prompt_id: promptId ?? null,
+    one_page: onePage,
   });
 }
 
@@ -173,12 +182,14 @@ export async function improveResume(
 export async function previewImproveResume(
   resumeId: string,
   jobId: string,
-  promptId?: string
+  promptId?: string,
+  onePage = false
 ): Promise<ImprovedResult> {
   return postImprove('/resumes/improve/preview', {
     resume_id: resumeId,
     job_id: jobId,
     prompt_id: promptId ?? null,
+    one_page: onePage,
   });
 }
 
@@ -248,6 +259,8 @@ export function getResumePdfUrl(
     params.set('compactMode', String(settings.compactMode));
     params.set('showContactIcons', String(settings.showContactIcons));
     params.set('accentColor', settings.accentColor);
+    params.set('onePage', String(settings.onePage));
+    params.set('showPhoto', String(settings.showPhoto));
   } else {
     params.set('template', 'swiss-single');
     params.set('pageSize', 'A4');
@@ -308,6 +321,20 @@ export async function renameResume(resumeId: string, title: string): Promise<voi
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`Failed to rename resume (status ${res.status}): ${text}`);
+  }
+}
+
+/** Persists per-resume template settings (template, margins, fonts, toggles) */
+export async function updateTemplateSettings(
+  resumeId: string,
+  templateSettings: TemplateSettings
+): Promise<void> {
+  const res = await apiPatch(`/resumes/${encodeURIComponent(resumeId)}/settings`, {
+    template_settings: templateSettings,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Failed to save template settings (status ${res.status}): ${text}`);
   }
 }
 

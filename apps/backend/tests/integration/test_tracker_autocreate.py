@@ -118,6 +118,20 @@ class TestTrackerAutoCreate:
         assert card["company"] == "Acme Corp"
         assert card["role"] == "Senior Backend Engineer - Acme Corp"
         assert card["applied_at"] is not None
+        # The card surfaces the persisted ATS score of the tailored resume.
+        assert isinstance(card["ats_score"], float)
+        assert 0.0 <= card["ats_score"] <= 100.0
+
+        # The detail endpoint returns the full persisted breakdown.
+        async with _new_client() as client:
+            detail = (
+                await client.get(f"/api/v1/applications/{card['application_id']}")
+            ).json()
+        assert detail["ats_score"] == card["ats_score"]
+        breakdown = detail["ats_breakdown"]
+        assert breakdown["overall_score"] == card["ats_score"]
+        assert isinstance(breakdown["sub_scores"], dict)
+        assert breakdown["job_id"] == job_id
 
     async def test_autocreate_is_idempotent_on_double_confirm(self, isolated_db, sample_resume):
         # Two tailorings of the same master+job dedupe to a single card.

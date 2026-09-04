@@ -34,6 +34,7 @@ vi.mock('@/lib/api/resume', () => ({
   getCoverLetterPdfUrl: vi.fn(() => ''),
   updateCoverLetter: vi.fn(),
   updateOutreachMessage: vi.fn(),
+  updateTemplateSettings: vi.fn(() => Promise.resolve()),
   generateCoverLetter: vi.fn(),
   generateOutreachMessage: vi.fn(),
   generateInterviewPrep: vi.fn(),

@@ -8,12 +8,14 @@ import type {
 import { getSortedSections } from '@/lib/utils/section-helpers';
 import { formatDateRange } from '@/lib/utils';
 import { DescriptionList } from './description-list';
+import { ResumePhoto } from './resume-photo';
 import baseStyles from './styles/_base.module.css';
 import styles from './styles/modern.module.css';
 
 interface ResumeModernProps {
   data: ResumeData;
   showContactIcons?: boolean;
+  showPhoto?: boolean;
   additionalSectionLabels?: Partial<AdditionalSectionLabels>;
 }
 
@@ -29,6 +31,7 @@ interface ResumeModernProps {
 export const ResumeModern: React.FC<ResumeModernProps> = ({
   data,
   showContactIcons = false,
+  showPhoto = false,
   additionalSectionLabels,
 }) => {
   const { personalInfo, summary, workExperience, education, personalProjects, additional } = data;
@@ -264,61 +267,66 @@ export const ResumeModern: React.FC<ResumeModernProps> = ({
     <div className={styles.container}>
       {/* Header Section - Centered Layout (always first) */}
       {personalInfo && (
-        <header className={`text-center ${baseStyles['resume-header']}`}>
-          {/* Name - Centered */}
-          {personalInfo.name && (
-            <h1 className={`${baseStyles['resume-name']} tracking-tight uppercase mb-1`}>
-              {personalInfo.name}
-            </h1>
-          )}
+        <header
+          className={`${showPhoto ? 'flex items-center gap-4 text-left' : 'text-center'} ${baseStyles['resume-header']}`}
+        >
+          <ResumePhoto personalInfo={personalInfo} showPhoto={showPhoto} className="w-16" />
+          <div className={showPhoto ? 'min-w-0 flex-1' : undefined}>
+            {/* Name - Centered */}
+            {personalInfo.name && (
+              <h1 className={`${baseStyles['resume-name']} tracking-tight uppercase mb-1`}>
+                {personalInfo.name}
+              </h1>
+            )}
 
-          {/* Decorative accent underline under name */}
-          <div className={styles['name-underline']} aria-hidden="true" />
+            {/* Decorative accent underline under name */}
+            <div className={styles['name-underline']} aria-hidden="true" />
 
-          {/* Title - Centered, below name */}
-          {personalInfo.title && (
-            <h2
-              className={`${baseStyles['resume-title']} ${baseStyles['resume-meta']} tracking-wide uppercase mt-3 mb-3`}
+            {/* Title - Centered, below name */}
+            {personalInfo.title && (
+              <h2
+                className={`${baseStyles['resume-title']} ${baseStyles['resume-meta']} tracking-wide uppercase mt-3 mb-3`}
+              >
+                {personalInfo.title}
+              </h2>
+            )}
+
+            {/* Contact - Own line, centered */}
+            <div
+              className={`flex flex-wrap gap-x-1 gap-y-1 ${showPhoto ? 'justify-start' : 'justify-center'} ${baseStyles['resume-meta']}`}
             >
-              {personalInfo.title}
-            </h2>
-          )}
-
-          {/* Contact - Own line, centered */}
-          <div
-            className={`flex flex-wrap justify-center gap-x-1 gap-y-1 ${baseStyles['resume-meta']}`}
-          >
-            {renderContactDetail('Email', personalInfo.email, 'mailto:')}
-            {personalInfo.phone && (
-              <>
-                <span className={baseStyles['text-muted']}>,</span>
-                {renderContactDetail('Phone', personalInfo.phone, 'tel:')}
-              </>
-            )}
-            {personalInfo.location && (
-              <>
-                <span className={baseStyles['text-muted']}>,</span>
-                {renderContactDetail('Location', personalInfo.location)}
-              </>
-            )}
-            {personalInfo.website && (
-              <>
-                <span className={baseStyles['text-muted']}>,</span>
-                {renderContactDetail('Website', personalInfo.website)}
-              </>
-            )}
-            {personalInfo.linkedin && (
-              <>
-                <span className={baseStyles['text-muted']}>,</span>
-                {renderContactDetail('LinkedIn', personalInfo.linkedin)}
-              </>
-            )}
-            {personalInfo.github && (
-              <>
-                <span className={baseStyles['text-muted']}>,</span>
-                {renderContactDetail('GitHub', personalInfo.github)}
-              </>
-            )}
+              {renderContactDetail('Email', personalInfo.email, 'mailto:')}
+              {personalInfo.phone && (
+                <>
+                  <span className={baseStyles['text-muted']}>,</span>
+                  {renderContactDetail('Phone', personalInfo.phone, 'tel:')}
+                </>
+              )}
+              {personalInfo.location && (
+                <>
+                  <span className={baseStyles['text-muted']}>,</span>
+                  {renderContactDetail('Location', personalInfo.location)}
+                </>
+              )}
+              {personalInfo.website && (
+                <>
+                  <span className={baseStyles['text-muted']}>,</span>
+                  {renderContactDetail('Website', personalInfo.website)}
+                </>
+              )}
+              {personalInfo.linkedin && (
+                <>
+                  <span className={baseStyles['text-muted']}>,</span>
+                  {renderContactDetail('LinkedIn', personalInfo.linkedin)}
+                </>
+              )}
+              {personalInfo.github && (
+                <>
+                  <span className={baseStyles['text-muted']}>,</span>
+                  {renderContactDetail('GitHub', personalInfo.github)}
+                </>
+              )}
+            </div>
           </div>
         </header>
       )}

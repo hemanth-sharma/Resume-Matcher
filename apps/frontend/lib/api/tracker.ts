@@ -27,12 +27,16 @@ export interface Application {
   position: number;
   created_at: string;
   updated_at: string;
+  /** Overall ATS score (0-100) of the applied resume against this job; null when unscored. */
+  ats_score: number | null;
 }
 
 export interface ApplicationDetail extends Application {
   job_content: string | null;
   // The applied/tailored resume record (null when it has been deleted).
   resume: Record<string, unknown> | null;
+  /** Full ATS score breakdown of the applied resume (sub-scores, keywords, …). */
+  ats_breakdown: Record<string, unknown> | null;
 }
 
 export type ApplicationColumns = Record<ApplicationStatus, Application[]>;

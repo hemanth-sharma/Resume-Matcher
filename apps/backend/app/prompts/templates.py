@@ -489,6 +489,20 @@ DIFF_STRATEGY_INSTRUCTIONS = {
     "full": "Make targeted adjustments. You may rephrase bullets, add verified JD skills, and add new bullets that elaborate on existing work, but do not invent new responsibilities.",
 }
 
+# Appended to tailoring prompts when the user requests a one-page resume.
+# Content-level condensation (the layout is handled by compact template
+# settings); mirrors how a human editor trims a resume to a single page.
+ONE_PAGE_RESUME_CONSTRAINT = """
+
+ONE-PAGE CONSTRAINT - CRITICAL:
+The tailored resume MUST fit on a single page (A4/US Letter). Prioritize ruthlessly:
+1. Keep only the bullets most relevant to this job; merge or drop the rest.
+2. Rephrase remaining bullets to be concise - aim for one line each, two at most.
+3. Limit the summary to 2-3 lines and keep the skills list focused on JD-relevant items.
+4. If space is tight, keep the most recent 2-3 roles and drop older or irrelevant ones.
+5. Never fabricate or inflate content to save space - cut instead. Truthfulness rules still apply.
+"""
+
 SKILL_TARGET_PLAN_PROMPT = """Build a concise skill target plan for tailoring this resume to the job.
 
 Return ONLY a JSON object. Do not rewrite the resume.

@@ -363,6 +363,29 @@ class TestTailoringPipeline:
         assert improvement["original_resume_id"] == resume_id
         assert improvement["job_id"] == job_id
 
+        # The ATS score is recomputed server-side on confirm, persisted on the
+        # tailored resume row, and returned in the confirm response — together
+        # with a baseline score of the original for before/after comparison.
+        assert confirm_data["ats_score"] is not None
+        overall = confirm_data["ats_score"]["overall_score"]
+        assert 0.0 <= overall <= 100.0
+        assert confirm_data["ats_score"]["interpretation"] in {
+            "excellent", "strong", "moderate", "weak", "poor", "unknown",
+        }
+        assert isinstance(confirm_data["ats_score"]["sub_scores"], dict)
+        assert stored_tailored["ats_score"]["overall_score"] == overall
+        assert stored_tailored["ats_score"]["job_id"] == job_id
+        assert stored_tailored["ats_score"]["computed_at"]
+        # Baseline: the original resume scored against the same job.
+        baseline = confirm_data.get("baseline_ats_score")
+        assert baseline is not None
+        assert 0.0 <= baseline["overall_score"] <= 100.0
+
+        # The preview response also carries both scores (for the diff modal).
+        assert preview_data["ats_score"] is not None
+        assert preview_data["ats_score"]["overall_score"] >= 0.0
+        assert preview_data.get("baseline_ats_score") is not None
+
         # Master + tailored both present; master unchanged.
         stats = await isolated_db.get_stats()
         assert stats["total_resumes"] == 2

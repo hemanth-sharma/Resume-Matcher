@@ -9,12 +9,14 @@ import { getSortedSections, getSectionMeta } from '@/lib/utils/section-helpers';
 import { formatDateRange } from '@/lib/utils';
 import { DynamicResumeSection } from './dynamic-resume-section';
 import { DescriptionList } from './description-list';
+import { ResumePhoto } from './resume-photo';
 import baseStyles from './styles/_base.module.css';
 import styles from './styles/modern-two-column.module.css';
 
 interface ResumeModernTwoColumnProps {
   data: ResumeData;
   showContactIcons?: boolean;
+  showPhoto?: boolean;
   sectionHeadings?: Partial<ResumeSectionHeadings>;
   fallbackLabels?: Partial<ResumeFallbackLabels>;
 }
@@ -33,6 +35,7 @@ interface ResumeModernTwoColumnProps {
 export const ResumeModernTwoColumn: React.FC<ResumeModernTwoColumnProps> = ({
   data,
   showContactIcons = false,
+  showPhoto = false,
   sectionHeadings,
   fallbackLabels,
 }) => {
@@ -148,23 +151,26 @@ export const ResumeModernTwoColumn: React.FC<ResumeModernTwoColumnProps> = ({
   return (
     <>
       {/* Header */}
-      <div className={baseStyles['resume-header']}>
-        <h1 className={`${baseStyles['resume-name']} ${styles.nameAccent}`}>
-          {personalInfo?.name || nameFallback}
-        </h1>
-        {personalInfo?.title && (
-          <div className={`${baseStyles['resume-title']} mt-1`}>{personalInfo.title}</div>
-        )}
-        {personalInfo && (
-          <div className={`${baseStyles['resume-meta']} flex flex-wrap gap-x-3 gap-y-1 mt-2`}>
-            {renderContactDetail('Email', personalInfo.email, 'mailto:')}
-            {renderContactDetail('Phone', personalInfo.phone, 'tel:')}
-            {renderContactDetail('Location', personalInfo.location)}
-            {renderContactDetail('Website', personalInfo.website)}
-            {renderContactDetail('LinkedIn', personalInfo.linkedin)}
-            {renderContactDetail('GitHub', personalInfo.github)}
-          </div>
-        )}
+      <div className={`flex items-center gap-4 ${baseStyles['resume-header']}`}>
+        <ResumePhoto personalInfo={personalInfo} showPhoto={showPhoto} className="w-16" />
+        <div className="min-w-0 flex-1">
+          <h1 className={`${baseStyles['resume-name']} ${styles.nameAccent}`}>
+            {personalInfo?.name || nameFallback}
+          </h1>
+          {personalInfo?.title && (
+            <div className={`${baseStyles['resume-title']} mt-1`}>{personalInfo.title}</div>
+          )}
+          {personalInfo && (
+            <div className={`${baseStyles['resume-meta']} flex flex-wrap gap-x-3 gap-y-1 mt-2`}>
+              {renderContactDetail('Email', personalInfo.email, 'mailto:')}
+              {renderContactDetail('Phone', personalInfo.phone, 'tel:')}
+              {renderContactDetail('Location', personalInfo.location)}
+              {renderContactDetail('Website', personalInfo.website)}
+              {renderContactDetail('LinkedIn', personalInfo.linkedin)}
+              {renderContactDetail('GitHub', personalInfo.github)}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Two-Column Grid */}

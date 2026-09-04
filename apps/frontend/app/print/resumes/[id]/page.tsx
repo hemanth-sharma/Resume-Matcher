@@ -13,6 +13,7 @@ import { API_BASE } from '@/lib/api/client';
 import { translate } from '@/lib/i18n/server';
 import { resolveLocale } from '@/lib/i18n/locale';
 import { withLocalizedDefaultSections } from '@/lib/utils/section-helpers';
+import { headers } from 'next/headers';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -33,8 +34,11 @@ type PageProps = {
     compactMode?: string;
     showContactIcons?: string;
     accentColor?: string;
+    onePage?: string;
+    showPhoto?: string;
     lang?: string;
   }>;
+  headers?: Headers;
 };
 
 /**
@@ -76,9 +80,16 @@ function parseBoolean(value: string | undefined, defaultValue: boolean): boolean
   return defaultValue;
 }
 
-async function fetchResumeData(id: string): Promise<ResumeData> {
+async function fetchResumeData(id: string, reqHeaders?: Headers): Promise<ResumeData> {
+  // Safely extract the auth header
+  const authHeader = reqHeaders?.get('authorization');
+  const fetchHeaders: HeadersInit = {};
+  if (authHeader) {
+    fetchHeaders['Authorization'] = authHeader;
+  }
   const res = await fetch(`${API_BASE}/resumes?resume_id=${encodeURIComponent(id)}`, {
     cache: 'no-store',
+    headers: fetchHeaders, 
   });
   if (!res.ok) {
     throw new Error(`Failed to load resume (status ${res.status}).`);
@@ -158,7 +169,8 @@ function parsePageSize(value: string | undefined): PageSize {
 export default async function PrintResumePage({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const resumeData = await fetchResumeData(resolvedParams.id);
+  const reqHeaders = await headers(); 
+  const resumeData = await fetchResumeData(resolvedParams.id, reqHeaders);
   const locale = resolveLocale(resolvedSearchParams?.lang);
   const t = (key: string, params?: Record<string, string | number>) =>
     translate(locale, key, params);
@@ -235,6 +247,8 @@ export default async function PrintResumePage({ params, searchParams }: PageProp
       DEFAULT_TEMPLATE_SETTINGS.showContactIcons
     ),
     accentColor: parseAccentColor(resolvedSearchParams?.accentColor),
+    onePage: parseBoolean(resolvedSearchParams?.onePage, DEFAULT_TEMPLATE_SETTINGS.onePage),
+    showPhoto: parseBoolean(resolvedSearchParams?.showPhoto, DEFAULT_TEMPLATE_SETTINGS.showPhoto),
   };
 
   // Note: Margins are applied by Playwright's PDF renderer (not here)

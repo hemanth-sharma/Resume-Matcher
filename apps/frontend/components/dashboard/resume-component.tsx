@@ -25,6 +25,8 @@ export interface PersonalInfo {
   website?: string;
   linkedin?: string;
   github?: string;
+  /** Optional profile photo (data URL) rendered when the photo setting is on. */
+  photo?: string | null;
 }
 
 export interface Experience {
@@ -183,58 +185,88 @@ const Resume: React.FC<ResumeProps> = ({
   // Convert settings to CSS variables
   const cssVars = settingsToCssVars(mergedSettings, locale);
 
+  // One-page mode: tighten spacing/line-height beyond compact mode. Content
+  // condensation happens at tailoring time (one_page flag on the improve
+  // request); this keeps the layout tight so the trimmed content fits.
+  const effectiveSettings: TemplateSettings = mergedSettings.onePage
+    ? {
+        ...mergedSettings,
+        compactMode: true,
+        spacing: {
+          section: Math.min(
+            mergedSettings.spacing.section,
+            2
+          ) as TemplateSettings['spacing']['section'],
+          item: Math.min(mergedSettings.spacing.item, 2) as TemplateSettings['spacing']['item'],
+          lineHeight: Math.min(
+            mergedSettings.spacing.lineHeight,
+            2
+          ) as TemplateSettings['spacing']['lineHeight'],
+        },
+      }
+    : mergedSettings;
+
+  const showPhoto = effectiveSettings.showPhoto && Boolean(resumeData.personalInfo?.photo);
+
   return (
     <div
-      className={`${baseStyles['resume-body']} bg-white text-black w-full mx-auto resume-template-${mergedSettings.template}`}
+      className={`${baseStyles['resume-body']} bg-white text-black w-full mx-auto resume-template-${effectiveSettings.template}${effectiveSettings.onePage ? ' resume-one-page' : ''}`}
       style={cssVars}
     >
-      {mergedSettings.template === 'swiss-single' && (
+      {effectiveSettings.template === 'swiss-single' && (
         <ResumeSingleColumn
           data={resumeData}
-          showContactIcons={mergedSettings.showContactIcons}
+          showContactIcons={effectiveSettings.showContactIcons}
+          showPhoto={showPhoto}
           additionalSectionLabels={additionalSectionLabels}
         />
       )}
-      {mergedSettings.template === 'swiss-two-column' && (
+      {effectiveSettings.template === 'swiss-two-column' && (
         <ResumeTwoColumn
           data={resumeData}
-          showContactIcons={mergedSettings.showContactIcons}
+          showContactIcons={effectiveSettings.showContactIcons}
+          showPhoto={showPhoto}
           sectionHeadings={sectionHeadings}
         />
       )}
-      {mergedSettings.template === 'modern' && (
+      {effectiveSettings.template === 'modern' && (
         <ResumeModern
           data={resumeData}
-          showContactIcons={mergedSettings.showContactIcons}
+          showContactIcons={effectiveSettings.showContactIcons}
+          showPhoto={showPhoto}
           additionalSectionLabels={additionalSectionLabels}
         />
       )}
-      {mergedSettings.template === 'modern-two-column' && (
+      {effectiveSettings.template === 'modern-two-column' && (
         <ResumeModernTwoColumn
           data={resumeData}
-          showContactIcons={mergedSettings.showContactIcons}
+          showContactIcons={effectiveSettings.showContactIcons}
+          showPhoto={showPhoto}
           sectionHeadings={sectionHeadings}
           fallbackLabels={fallbackLabels}
         />
       )}
-      {mergedSettings.template === 'latex' && (
+      {effectiveSettings.template === 'latex' && (
         <ResumeLatex
           data={resumeData}
-          showContactIcons={mergedSettings.showContactIcons}
+          showContactIcons={effectiveSettings.showContactIcons}
+          showPhoto={showPhoto}
           additionalSectionLabels={additionalSectionLabels}
         />
       )}
-      {mergedSettings.template === 'clean' && (
+      {effectiveSettings.template === 'clean' && (
         <ResumeClean
           data={resumeData}
-          showContactIcons={mergedSettings.showContactIcons}
+          showContactIcons={effectiveSettings.showContactIcons}
+          showPhoto={showPhoto}
           additionalSectionLabels={additionalSectionLabels}
         />
       )}
-      {mergedSettings.template === 'vivid' && (
+      {effectiveSettings.template === 'vivid' && (
         <ResumeVivid
           data={resumeData}
-          showContactIcons={mergedSettings.showContactIcons}
+          showContactIcons={effectiveSettings.showContactIcons}
+          showPhoto={showPhoto}
           sectionHeadings={sectionHeadings}
           fallbackLabels={fallbackLabels}
         />

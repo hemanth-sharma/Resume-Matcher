@@ -8,12 +8,14 @@ import type {
 import { getSortedSections } from '@/lib/utils/section-helpers';
 import { formatDateRange } from '@/lib/utils';
 import { DescriptionList } from './description-list';
+import { ResumePhoto } from './resume-photo';
 import baseStyles from './styles/_base.module.css';
 import styles from './styles/clean.module.css';
 
 interface ResumeCleanProps {
   data: ResumeData;
   showContactIcons?: boolean;
+  showPhoto?: boolean;
   additionalSectionLabels?: Partial<AdditionalSectionLabels>;
 }
 
@@ -32,6 +34,7 @@ interface ResumeCleanProps {
 export const ResumeClean: React.FC<ResumeCleanProps> = ({
   data,
   showContactIcons = false,
+  showPhoto = false,
   additionalSectionLabels,
 }) => {
   const { personalInfo, summary, workExperience, education, personalProjects, additional } = data;
@@ -277,23 +280,28 @@ export const ResumeClean: React.FC<ResumeCleanProps> = ({
   return (
     <div className={styles.container}>
       {personalInfo && (
-        <header className={`text-center ${baseStyles['resume-header']}`}>
-          {personalInfo.name && <h1 className={`${styles.name} mb-1`}>{personalInfo.name}</h1>}
-          {personalInfo.title && (
-            <div className={`${styles.tagline} mb-1`}>{personalInfo.title}</div>
-          )}
-          {contactItems.length > 0 && (
-            <div
-              className={`flex flex-wrap justify-center items-center gap-x-2 gap-y-1 ${styles.contactRow}`}
-            >
-              {contactItems.map((item, index) => (
-                <React.Fragment key={index}>
-                  {index > 0 && <span className={styles.sep}>|</span>}
-                  {item}
-                </React.Fragment>
-              ))}
-            </div>
-          )}
+        <header
+          className={`${showPhoto ? 'flex items-center gap-4 text-left' : 'text-center'} ${baseStyles['resume-header']}`}
+        >
+          <ResumePhoto personalInfo={personalInfo} showPhoto={showPhoto} className="w-16" />
+          <div className={showPhoto ? 'min-w-0 flex-1' : undefined}>
+            {personalInfo.name && <h1 className={`${styles.name} mb-1`}>{personalInfo.name}</h1>}
+            {personalInfo.title && (
+              <div className={`${styles.tagline} mb-1`}>{personalInfo.title}</div>
+            )}
+            {contactItems.length > 0 && (
+              <div
+                className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${showPhoto ? 'justify-start' : 'justify-center'} ${styles.contactRow}`}
+              >
+                {contactItems.map((item, index) => (
+                  <React.Fragment key={index}>
+                    {index > 0 && <span className={styles.sep}>|</span>}
+                    {item}
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+          </div>
         </header>
       )}
 

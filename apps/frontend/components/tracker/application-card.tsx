@@ -5,6 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import GripVertical from 'lucide-react/dist/esm/icons/grip-vertical';
 import Layers from 'lucide-react/dist/esm/icons/layers';
+import Gauge from 'lucide-react/dist/esm/icons/gauge';
 import { Card } from '@/components/ui/card';
 import { useTranslations } from '@/lib/i18n';
 import type { Application } from '@/lib/api/tracker';
@@ -15,6 +16,14 @@ interface ApplicationCardProps {
   sharedResume: boolean;
   onToggleSelect: (id: string) => void;
   onOpen: (id: string) => void;
+}
+
+/** Color band for the ATS score chip, matching the score card palette. */
+function atsChipClass(score: number): string {
+  if (score >= 80) return 'bg-green-100 text-green-800 border-green-700';
+  if (score >= 60) return 'bg-yellow-100 text-yellow-800 border-yellow-700';
+  if (score >= 40) return 'bg-orange-100 text-orange-800 border-orange-700';
+  return 'bg-red-100 text-red-800 border-red-700';
 }
 
 export function ApplicationCard({
@@ -71,12 +80,24 @@ export function ApplicationCard({
                 {new Date(application.applied_at).toLocaleDateString()}
               </p>
             )}
-            {sharedResume && (
-              <span className="mt-1 inline-flex items-center gap-1 border border-black bg-paper-tint px-1 font-mono text-[10px] uppercase text-ink-soft">
-                <Layers className="h-3 w-3" />
-                {t('tracker.card.sharedResume')}
-              </span>
-            )}
+            <div className="mt-1 flex flex-wrap items-center gap-1">
+              {typeof application.ats_score === 'number' &&
+                Number.isFinite(application.ats_score) && (
+                  <span
+                    className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums ${atsChipClass(application.ats_score)}`}
+                    title={t('tracker.card.atsScore')}
+                  >
+                    <Gauge className="h-3 w-3" />
+                    {Math.round(application.ats_score)}
+                  </span>
+                )}
+              {sharedResume && (
+                <span className="inline-flex items-center gap-1 border border-black bg-paper-tint px-1 font-mono text-[10px] uppercase text-ink-soft">
+                  <Layers className="h-3 w-3" />
+                  {t('tracker.card.sharedResume')}
+                </span>
+              )}
+            </div>
           </button>
 
           <button

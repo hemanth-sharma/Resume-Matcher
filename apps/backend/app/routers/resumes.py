@@ -7,6 +7,7 @@ import json
 import logging
 import unicodedata
 from collections.abc import Awaitable
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, NoReturn
 from uuid import uuid4
@@ -43,6 +44,7 @@ from app.schemas import (
     RawResume,
     UpdateCoverLetterRequest,
     UpdateOutreachMessageRequest,
+    UpdateTemplateSettingsRequest,
     UpdateTitleRequest,
     normalize_resume_data,
 )
@@ -63,7 +65,11 @@ from app.services.improver import (
     verify_skill_target_plan,
     verify_diff_result,
 )
-from app.services.refiner import refine_resume, calculate_keyword_match
+from app.services.refiner import (
+    analyze_keyword_gaps,
+    calculate_keyword_match,
+    refine_resume,
+)
 from app.services.ats import compute_ats_score
 from app.schemas.refinement import RefinementConfig
 from app.services.cover_letter import (
@@ -469,8 +475,15 @@ def _build_ats_score(
     job_keywords: dict[str, Any],
     refinement_result: Any,
     refinement_successful: bool,
+    missing_keywords: list[str] | None = None,
+    injectable_keywords: list[str] | None = None,
 ) -> ATSScore | None:
-    """Build ATSScore from refinement result and resume data."""
+    """Build ATSScore from refinement result and resume data.
+
+    ``missing_keywords`` / ``injectable_keywords``: gap analysis from the
+    refiner. When omitted (e.g. the confirm path, which runs outside the
+    refinement pipeline) the gap is recomputed from the master/original resume.
+    """
     try:
         kw_analysis = (
             refinement_result.keyword_analysis
@@ -486,19 +499,67 @@ def _build_ats_score(
             refined_resume=improved_data,
             job_keywords=job_keywords,
             keyword_match_percentage=final_match,
-            missing_keywords=kw_analysis.non_injectable_keywords if kw_analysis else [],
-            injectable_keywords=kw_analysis.injectable_keywords if kw_analysis else [],
+            missing_keywords=missing_keywords if missing_keywords is not None else (
+                kw_analysis.non_injectable_keywords if kw_analysis else []
+            ),
+            injectable_keywords=injectable_keywords if injectable_keywords is not None else (
+                kw_analysis.injectable_keywords if kw_analysis else []
+            ),
         )
         return ATSScore(
             overall_score=ats_raw["overall_score"],
             sub_scores=ATSSubScores(**ats_raw["sub_scores"]),
+            matched_keywords=ats_raw.get("matched_keywords", []),
             missing_keywords=ats_raw["missing_keywords"],
             injectable_keywords=ats_raw["injectable_keywords"],
             recommendations=ats_raw["recommendations"],
+            interpretation=ats_raw.get("interpretation", "unknown"),
+            details=ats_raw.get("details"),
         )
     except Exception as e:
         logger.warning("ATS score computation failed", exc_info=True)
         return None
+
+
+def _persisted_ats_payload(ats: ATSScore | None, job_id: str) -> dict[str, Any] | None:
+    """Serialize an ATSScore into the JSON stored on the resume row.
+
+    Adds job_id/computed_at context so the score is auditable later (which
+    job it was scored against, and when).
+    """
+    if ats is None:
+        return None
+    payload = ats.model_dump()
+    payload["job_id"] = job_id
+    payload["computed_at"] = datetime.now(timezone.utc).isoformat()
+    return payload
+
+
+async def _ensure_job_keywords(
+    job: dict[str, Any],
+) -> dict[str, Any]:
+    """Return the job's cached keyword dict, extracting (and persisting) it
+    when missing or stale. Shared by the confirm path which runs outside the
+    preview flow."""
+    job_keywords = job.get("job_keywords")
+    job_keywords_hash = job.get("job_keywords_hash")
+    content_hash = _hash_job_content(job["content"])
+    if job_keywords and job_keywords_hash == content_hash:
+        return job_keywords
+    job_keywords = await extract_job_keywords(job["content"])
+    try:
+        await db.update_job(
+            job["job_id"],
+            {
+                "job_keywords": job_keywords,
+                "job_keywords_hash": content_hash,
+            },
+        )
+    except Exception as e:
+        logger.warning(
+            "Failed to persist job keywords for job %s: %s", job["job_id"], e
+        )
+    return job_keywords
 
 
 def _calculate_diff_from_resume(
@@ -693,6 +754,19 @@ async def upload_resume(file: UploadFile = File(...)) -> ResumeUploadResponse:
     # Try to parse to structured JSON (optional, may fail if LLM not configured)
     try:
         processed_data = await parse_resume_to_json(markdown_content)
+        
+        # Inject default photo from global config if available
+        config = _load_config()
+        default_photo = config.get("default_photo")
+        if default_photo:
+            if not isinstance(processed_data, dict):
+                processed_data = {}
+            if not isinstance(processed_data.get("personalInfo"), dict):
+                processed_data["personalInfo"] = {}
+            # Only set the default photo if the parser didn't find one
+            if not processed_data["personalInfo"].get("photo"):
+                processed_data["personalInfo"]["photo"] = default_photo
+        
         await db.update_resume(
             resume["resume_id"],
             {
@@ -772,6 +846,8 @@ async def get_resume(resume_id: str = Query(...)) -> ResumeFetchResponse:
             ),
             parent_id=resume.get("parent_id"),
             title=resume.get("title"),
+            ats_score=resume.get("ats_score"),
+            template_settings=resume.get("template_settings"),
         ),
     )
 
@@ -795,6 +871,7 @@ async def list_resumes(include_master: bool = Query(False)) -> ResumeListRespons
             created_at=resume.get("created_at", ""),
             updated_at=resume.get("updated_at", ""),
             title=resume.get("title"),
+            ats_score=resume.get("ats_score"),
         )
         for resume in resumes
     ]
@@ -944,6 +1021,7 @@ async def _improve_preview_flow(
             prompt_id=prompt_id,
             original_resume_data=original_resume_data,
             skill_targets=skill_targets,
+            one_page=request.one_page,
         )
 
         improved_data, applied_changes, rejected_changes = apply_diffs(
@@ -980,6 +1058,7 @@ async def _improve_preview_flow(
             language=language,
             prompt_id=prompt_id,
             original_resume_data=original_resume_data,
+            one_page=request.one_page,
         )
 
     # Safety nets (defense in depth — should rarely activate with diff-based flow)
@@ -1086,6 +1165,15 @@ async def _improve_preview_flow(
     improvements = generate_improvements(job_keywords)
 
     request_id = str(uuid4())
+    # Baseline score: the ORIGINAL resume against the same job, so the UI can
+    # show how much the tailoring actually lifted the ATS match.
+    baseline_ats_score = _build_ats_score(
+        original_resume_data or {},
+        job_keywords,
+        None,
+        False,
+    ) if original_resume_data else None
+
     return ImproveResumeResponse(
         request_id=request_id,
         data=ImproveResumeData(
@@ -1114,6 +1202,7 @@ async def _improve_preview_flow(
                 refinement_result,
                 refinement_successful,
             ),
+            baseline_ats_score=baseline_ats_score,
             warnings=response_warnings,
             refinement_attempted=refinement_attempted,
             refinement_successful=refinement_successful,
@@ -1212,6 +1301,39 @@ async def improve_resume_confirm_endpoint(
         )
         response_warnings.extend(aux_warnings)
 
+        stage = "compute_ats_score"
+        # Recompute the ATS score server-side from the confirmed payload (never
+        # trust client-supplied scores) and persist it on the tailored resume.
+        job_keywords: dict[str, Any] | None = None
+        confirmed_ats_score: ATSScore | None = None
+        try:
+            job_keywords = await _ensure_job_keywords(job)
+            gap_master = (
+                _get_original_resume_data(resume)
+                or _get_original_resume_data(await db.get_master_resume())
+                or improved_data
+            )
+            gap_analysis = analyze_keyword_gaps(job_keywords, improved_data, gap_master)
+            confirmed_ats_score = _build_ats_score(
+                improved_data,
+                job_keywords,
+                None,
+                False,
+                missing_keywords=gap_analysis.non_injectable_keywords,
+                injectable_keywords=gap_analysis.injectable_keywords,
+            )
+        except Exception as e:
+            logger.warning("ATS score computation failed on confirm: %s", e)
+            confirmed_ats_score = None
+
+        # Baseline score of the original resume for before/after comparison.
+        original_data_for_baseline = _get_original_resume_data(resume)
+        baseline_ats_score = (
+            _build_ats_score(original_data_for_baseline, job_keywords or {}, None, False)
+            if original_data_for_baseline and job_keywords
+            else None
+        )
+
         stage = "create_resume"
         tailored_resume = await db.create_resume(
             content=improved_text,
@@ -1225,6 +1347,7 @@ async def improve_resume_confirm_endpoint(
             outreach_message=outreach_message,
             interview_prep=_serialize_interview_prep(interview_prep),
             title=title,
+            ats_score=_persisted_ats_payload(confirmed_ats_score, request.job_id),
         )
 
         improvements_payload = [imp.model_dump() for imp in request.improvements]
@@ -1260,6 +1383,8 @@ async def improve_resume_confirm_endpoint(
                 interview_prep=interview_prep,
                 diff_summary=diff_summary,
                 detailed_changes=detailed_changes,
+                ats_score=confirmed_ats_score,
+                baseline_ats_score=baseline_ats_score,
                 warnings=response_warnings,
             ),
         )
@@ -1317,6 +1442,7 @@ async def improve_resume_endpoint(
                 language=language,
                 prompt_id=prompt_id,
                 original_resume_data=original_resume_data,
+                one_page=request.one_page,
             )
 
             improved_data, applied_changes, rejected_changes = apply_diffs(
@@ -1352,6 +1478,7 @@ async def improve_resume_endpoint(
                 language=language,
                 prompt_id=prompt_id,
                 original_resume_data=original_resume_data,
+                one_page=request.one_page,
             )
 
         # Safety nets (defense in depth)
@@ -1456,6 +1583,19 @@ async def improve_resume_endpoint(
         )
         response_warnings.extend(aux_warnings)
 
+        # Compute the ATS score server-side and persist it with the resume.
+        final_ats_score = _build_ats_score(
+            improved_data,
+            job_keywords,
+            refinement_result,
+            refinement_successful,
+        )
+        baseline_ats_score = (
+            _build_ats_score(original_resume_data, job_keywords, None, False)
+            if original_resume_data
+            else None
+        )
+
         # Store the tailored resume with cover letter, outreach message, and title
         tailored_resume = await db.create_resume(
             content=improved_text,
@@ -1469,6 +1609,7 @@ async def improve_resume_endpoint(
             outreach_message=outreach_message,
             interview_prep=_serialize_interview_prep(interview_prep),
             title=title,
+            ats_score=_persisted_ats_payload(final_ats_score, request.job_id),
         )
 
         # Store improvement record
@@ -1511,12 +1652,8 @@ async def improve_resume_endpoint(
                 diff_summary=diff_summary,
                 detailed_changes=detailed_changes,
                 refinement_stats=refinement_stats,
-                ats_score=_build_ats_score(
-                    improved_data,
-                    job_keywords,
-                    refinement_result,
-                    refinement_successful,
-                ),
+                ats_score=final_ats_score,
+                baseline_ats_score=baseline_ats_score,
                 warnings=response_warnings,
                 refinement_attempted=refinement_attempted,
                 refinement_successful=refinement_successful,
@@ -1607,6 +1744,8 @@ async def download_resume_pdf(
     compactMode: bool = Query(False),
     showContactIcons: bool = Query(False),
     accentColor: str = Query("blue", pattern="^(blue|green|orange|red)$"),
+    onePage: bool = Query(False),          # Add OnePage
+    showPhoto: bool = Query(False),        # Add Photo
     lang: str | None = Query(None, pattern="^[a-z]{2}(-[A-Z]{2})?$"),
 ) -> Response:
     """Generate a PDF for a resume using headless Chromium.
@@ -1625,6 +1764,8 @@ async def download_resume_pdf(
     - compactMode: enable tighter spacing
     - showContactIcons: show icons in contact info
     - lang: locale used for print page translations
+    - onePage: constraint to keep the downloaded data to one page
+    - showPhoto: boolean that toggle's photo save
     """
     resume = await db.get_resume(resume_id)
     if not resume:
@@ -1648,6 +1789,8 @@ async def download_resume_pdf(
         f"&compactMode={str(compactMode).lower()}"
         f"&showContactIcons={str(showContactIcons).lower()}"
         f"&accentColor={accentColor}"
+        f"&onePage={str(onePage).lower()}"          # 
+        f"&showPhoto={str(showPhoto).lower()}"      # 
     )
     if lang:
         params = f"{params}&lang={lang}"
@@ -1781,6 +1924,43 @@ async def update_title(resume_id: str, request: UpdateTitleRequest) -> dict:
     title = request.title.strip()[:80]
     await db.update_resume(resume_id, {"title": title})
     return {"message": "Title updated successfully"}
+
+
+@router.patch("/{resume_id}/settings")
+async def update_template_settings(
+    resume_id: str, request: UpdateTemplateSettingsRequest
+) -> dict:
+    """Persist per-resume template settings (template, page size, margins,
+    fonts, one-page/photo toggles).
+
+    Settings saved here are returned by GET /resumes so the viewer page and
+    PDF renderer use the same look the user configured in the builder,
+    independent of browser localStorage.
+    """
+    resume = await db.get_resume(resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    settings = request.template_settings
+    if not isinstance(settings, dict):
+        raise HTTPException(status_code=400, detail="template_settings must be an object")
+
+    # Defensive size guard: settings are small config objects; anything huge is
+    # a bug or abuse (e.g. a base64 photo accidentally embedded here).
+    if len(json.dumps(settings, default=str)) > 16 * 1024:
+        raise HTTPException(
+            status_code=413, detail="template_settings payload too large"
+        )
+
+    try:
+        updated = await db.update_resume(resume_id, {"template_settings": settings})
+    except ResumeNotFoundError:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    return {
+        "message": "Template settings saved",
+        "template_settings": updated.get("template_settings"),
+    }
 
 
 @router.post(

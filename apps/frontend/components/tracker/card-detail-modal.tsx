@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Pencil from 'lucide-react/dist/esm/icons/pencil';
+import Gauge from 'lucide-react/dist/esm/icons/gauge';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/lib/i18n';
 import { getApplicationDetail, updateApplication, type ApplicationDetail } from '@/lib/api/tracker';
+import { ATSScoreCard } from '@/components/tailor/ats-score-card';
+import type { ATSScore } from '@/components/common/resume_previewer_context';
 
 interface CardDetailModalProps {
   applicationId: string | null;
@@ -86,6 +89,12 @@ export function CardDetailModal({
   };
 
   const resumeAvailable = Boolean(detail?.resume);
+  // The persisted ATS breakdown of the applied resume (sub-scores, keywords,
+  // recommendations) — rendered as a compact score panel inside the modal.
+  const atsBreakdown =
+    detail?.ats_breakdown && typeof detail.ats_breakdown === 'object'
+      ? (detail.ats_breakdown as unknown as ATSScore)
+      : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,6 +114,12 @@ export function CardDetailModal({
               <span className="border border-black bg-paper-tint px-2 py-0.5">
                 {t(`tracker.columns.${detail.status}`)}
               </span>
+              {typeof detail.ats_score === 'number' && Number.isFinite(detail.ats_score) && (
+                <span className="inline-flex items-center gap-1 border border-blue-700 bg-blue-50 px-2 py-0.5 font-bold tabular-nums text-blue-800">
+                  <Gauge className="h-3 w-3" />
+                  {t('tracker.modal.atsScore')}: {detail.ats_score.toFixed(1)}
+                </span>
+              )}
               {detail.applied_at && (
                 <span>
                   {new Date(detail.applied_at).toLocaleDateString('en-US', {
@@ -114,6 +129,12 @@ export function CardDetailModal({
                 </span>
               )}
             </div>
+
+            {atsBreakdown && (
+              <div className="max-h-72 overflow-y-auto">
+                <ATSScoreCard atsScore={atsBreakdown} compact />
+              </div>
+            )}
 
             <div className="space-y-1">
               <Label>{t('tracker.modal.jobDescription')}</Label>

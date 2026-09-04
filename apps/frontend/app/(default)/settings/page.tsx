@@ -65,6 +65,8 @@ import { useTranslations } from '@/lib/i18n';
 import { RESUME_DRAFT_STORAGE_PREFIX, safeStorage } from '@/lib/utils/resume-draft-storage';
 import type { SupportedLanguage } from '@/lib/api/config';
 import type { Locale } from '@/i18n/config';
+import { Upload, X } from 'lucide-react'; // Add to existing lucide-react imports
+
 
 type Status = 'idle' | 'loading' | 'saving' | 'saved' | 'error' | 'testing';
 
@@ -144,6 +146,8 @@ export default function SettingsPage() {
   const [enableCoverLetter, setEnableCoverLetter] = useState(false);
   const [enableOutreach, setEnableOutreach] = useState(false);
   const [enableInterviewPrep, setEnableInterviewPrep] = useState(false);
+  const [defaultPhoto, setDefaultPhoto] = useState<string | null>(null); // <--- ADD THIS
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);       // <--- ADD THIS
   const [featureConfigLoading, setFeatureConfigLoading] = useState(false);
   const [promptConfigLoading, setPromptConfigLoading] = useState(false);
   const [promptOptions, setPromptOptions] = useState<PromptOption[]>([]);
@@ -319,6 +323,7 @@ export default function SettingsPage() {
           setEnableCoverLetter(featureConfig.enable_cover_letter);
           setEnableOutreach(featureConfig.enable_outreach_message);
           setEnableInterviewPrep(featureConfig.enable_interview_prep);
+          setDefaultPhoto(featureConfig.default_photo || null); // 
         }
 
         if (promptConfig) {
@@ -504,6 +509,53 @@ export default function SettingsPage() {
       console.error('Failed to test connection', err);
       setHealthCheck({ healthy: false, provider, model, error: (err as Error).message });
       setStatus('idle');
+    }
+  };
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image size must be less than 2MB');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    setError(null);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64String = e.target?.result as string;
+        try {
+          const updated = await updateFeatureConfig({ default_photo: base64String });
+          setDefaultPhoto(updated.default_photo || null);
+        } catch (err) {
+          setError('Failed to upload image. Please try again.');
+        } finally {
+          setIsUploadingPhoto(false);
+        }
+      };
+      reader.onerror = () => {
+        setError('Failed to read image file.');
+        setIsUploadingPhoto(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setError('Failed to process image.');
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setIsUploadingPhoto(true);
+    try {
+      await updateFeatureConfig({ default_photo: null });
+      setDefaultPhoto(null);
+    } catch (err) {
+      setError('Failed to remove image.');
+    } finally {
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -1158,6 +1210,66 @@ export default function SettingsPage() {
                   )}
                 </div>
               )}
+            </div>
+          </section>
+
+                    {/* Default Profile Photo Section */}
+                    <section className="space-y-6">
+            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
+              <Settings2 className="w-4 h-4" />
+              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
+                {t('settings.defaultPhoto.title', { defaultValue: 'Default Profile Photo' })}
+              </h2>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="relative w-24 h-24 border-2 border-black bg-secondary overflow-hidden flex items-center justify-center shrink-0">
+                {defaultPhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={defaultPhoto}
+                    alt="Default profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="font-mono text-xs text-steel-grey uppercase">No Photo</span>
+                )}
+                {isUploadingPhoto && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-ink-soft">
+                  {t('settings.defaultPhoto.description', { defaultValue: 'Used automatically when a new resume is created. Replacing a photo in the builder does not change this default.' })}
+                </p>
+                <div className="flex gap-2">
+                  <label className={`inline-flex items-center justify-center gap-2 cursor-pointer px-3 py-1.5 text-sm ${SEGMENTED_BUTTON_BASE} ${SEGMENTED_BUTTON_INACTIVE}`}>
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{defaultPhoto ? 'Replace' : 'Upload'}</span>
+                    <input
+                      type="file"
+                      accept="image/png, image/jpeg"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                      disabled={isUploadingPhoto}
+                    />
+                  </label>
+                  {defaultPhoto && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRemovePhoto}
+                      disabled={isUploadingPhoto}
+                      className="text-destructive hover:bg-red-50"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
 

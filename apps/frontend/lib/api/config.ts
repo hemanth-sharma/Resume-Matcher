@@ -210,12 +210,14 @@ export interface FeatureConfig {
   enable_cover_letter: boolean;
   enable_outreach_message: boolean;
   enable_interview_prep: boolean;
+  default_photo?: string | null; 
 }
 
 export interface FeatureConfigUpdate {
   enable_cover_letter?: boolean;
   enable_outreach_message?: boolean;
   enable_interview_prep?: boolean;
+  default_photo?: string | null;
 }
 
 // Fetch feature configuration

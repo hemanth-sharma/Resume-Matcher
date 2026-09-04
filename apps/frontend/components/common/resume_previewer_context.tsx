@@ -11,6 +11,8 @@ export interface PersonalInfo {
   website?: string;
   linkedin?: string;
   github?: string;
+  /** Optional profile photo (data URL) rendered when the photo setting is on. */
+  photo?: string | null;
 }
 
 export interface ExperienceEntry {
@@ -51,14 +53,26 @@ export interface ATSSubScores {
   keyword_match: number;
   skills_coverage: number;
   section_completeness: number;
+  /** Added by the industry-grade engine; optional for backward compatibility. */
+  semantic_similarity?: number;
+  experience_alignment?: number;
+  education_match?: number;
+  formatting_quality?: number;
+  impact_quality?: number;
+  [key: string]: number | undefined;
 }
 
 export interface ATSScore {
   overall_score: number;
   sub_scores: ATSSubScores;
+  matched_keywords?: string[];
   missing_keywords: string[];
   injectable_keywords: string[];
   recommendations: string[];
+  /** Score band: excellent / strong / moderate / weak / poor */
+  interpretation?: string;
+  /** Per-component diagnostics (missing required skills, years, …) */
+  details?: Record<string, unknown> | null;
 }
 
 export interface ResumeDiffSummary {
@@ -138,6 +152,8 @@ export interface Data {
   diff_summary?: ResumeDiffSummary;
   detailed_changes?: ResumeFieldDiff[];
   ats_score?: ATSScore;
+  /** ATS score of the ORIGINAL resume against the same job (before/after). */
+  baseline_ats_score?: ATSScore | null;
 }
 
 export interface ImprovedResult {

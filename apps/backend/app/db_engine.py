@@ -67,5 +67,10 @@ def init_models_sync(engine: Engine) -> None:
     # migration idempotent so older local databases can load resumes safely.
     with engine.begin() as conn:
         columns = conn.exec_driver_sql("PRAGMA table_info(resumes)").mappings().all()
-        if columns and "interview_prep" not in {column["name"] for column in columns}:
+        column_names = {column["name"] for column in columns}
+        if columns and "interview_prep" not in column_names:
             conn.exec_driver_sql("ALTER TABLE resumes ADD COLUMN interview_prep TEXT")
+        if columns and "ats_score" not in column_names:
+            conn.exec_driver_sql("ALTER TABLE resumes ADD COLUMN ats_score JSON")
+        if columns and "template_settings" not in column_names:
+            conn.exec_driver_sql("ALTER TABLE resumes ADD COLUMN template_settings JSON")

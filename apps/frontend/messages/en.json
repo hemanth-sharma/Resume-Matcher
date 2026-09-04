@@ -99,7 +99,8 @@
       "dropzoneSubtitle": "PDF, DOC, DOCX (Max 4MB)",
       "tryDifferentFile": "Try Different File",
       "parsingFailedKeepOpen": "AI parsing failed. Try a different file or close this dialog."
-    }
+    },
+    "atsScore": "ATS score against its job description"
   },
   "builder": {
     "title": "Resume Builder",
@@ -450,7 +451,10 @@
       "effectiveHeaderFont": "Header Font",
       "effectiveBodyFont": "Body Font",
       "compactHint": "Compact mode tightens spacing and line height. Margins and base font size stay literal.",
-      "resetDefaults": "Reset to Defaults"
+      "resetDefaults": "Reset to Defaults",
+      "onePage": "One-page resume",
+      "onePageHint": "Tightens layout and spacing. For new tailorings, also enable it on the Tailor page to condense the content itself.",
+      "showPhoto": "Show photo"
     },
     "personalInfoForm": {
       "placeholders": {
@@ -462,6 +466,19 @@
         "website": "portfolio.com",
         "linkedin": "linkedin.com/in/john",
         "github": "github.com/john"
+      },
+      "photo": {
+        "label": "Profile photo (optional)",
+        "hint": "Shown when the photo setting is enabled in Formatting. Common in Europe and Asia; often filtered out by US ATS.",
+        "previewAlt": "Profile photo preview",
+        "upload": "Upload",
+        "replace": "Replace",
+        "remove": "Remove",
+        "errors": {
+          "format": "Unsupported image format. Use JPEG, PNG or WebP.",
+          "tooLarge": "Photo is too large. Keep it under 1.5 MB.",
+          "read": "Could not read the image file. Try again."
+        }
       }
     },
     "leftPanel": {
@@ -610,6 +627,18 @@
       "failedToGenerate": "Couldn't generate the resume. Check your API key in Settings, then try again.",
       "failedToPreview": "Couldn't preview the resume. Check your API key in Settings, then try again.",
       "failedToConfirm": "Couldn't apply the changes. Please try again."
+    },
+    "onePage": {
+      "label": "One-page resume",
+      "description": "Keeps only the most relevant, concise content so it fits one page"
+    },
+    "tokenInfo": {
+      "title": "How the tailoring modes differ (LLM usage)",
+      "intro": "All modes run the same pipeline (keyword extraction, diff generation, multi-pass refinement), so token usage is similar. The difference is how much the AI is allowed to edit:",
+      "nudge": "minimal rewording only — no new bullets, lowest risk of drift",
+      "keywords": "rephrases existing bullets to weave in job keywords — best balance of ATS lift and truthfulness",
+      "full": "may expand bullets and add ones that elaborate on existing work — highest ATS lift, needs the most review",
+      "note": "The mode only changes the editing instructions, not the number of LLM calls, so cost stays roughly equal."
     }
   },
   "settings": {
@@ -791,7 +820,8 @@
       "failedToLoad": "Failed to load resume data.",
       "failedToDelete": "Failed to delete resume. Please try again."
     },
-    "titlePlaceholder": "Enter resume title..."
+    "titlePlaceholder": "Enter resume title...",
+    "atsScoreTitle": "ATS Score (vs. this job)"
   },
   "preview": {
     "margins": "Margins",
@@ -1011,7 +1041,8 @@
       "roleUnknown": "Untitled role",
       "sharedResume": "Shared resume",
       "selectAria": "Select application",
-      "dragAria": "Drag to reorder"
+      "dragAria": "Drag to reorder",
+      "atsScore": "ATS score of the tailored resume"
     },
     "modal": {
       "jobDescription": "Job Description",
@@ -1021,7 +1052,8 @@
       "saveNotes": "Save notes",
       "resumeUnavailable": "The applied resume is no longer available.",
       "loadFailed": "Could not load this application.",
-      "editResume": "Edit resume"
+      "editResume": "Edit resume",
+      "atsScore": "ATS score"
     },
     "bulk": {
       "selected": "{count} selected",
@@ -1068,6 +1100,33 @@
       "projectFollowUps": "Project Follow-Ups",
       "skillGaps": "Skill Gaps",
       "talkingPoints": "Talking Points"
+    }
+  },
+  "atsCard": {
+    "title": "ATS Score Breakdown",
+    "improvementLabel": "Change vs original resume",
+    "baselineLabel": "Original resume",
+    "subScoresLabel": "Component Scores",
+    "subScores": {
+      "keyword_match": "Keyword Match",
+      "skills_coverage": "Skills Coverage",
+      "semantic_similarity": "Content Alignment",
+      "experience_alignment": "Experience Fit",
+      "education_match": "Education Match",
+      "section_completeness": "Section Completeness",
+      "formatting_quality": "Formatting Quality",
+      "impact_quality": "Impact & Achievements"
+    },
+    "matchedKeywordsLabel": "Matched Keywords",
+    "missingKeywordsLabel": "Missing Keywords",
+    "injectableKeywordsLabel": "Safe to Add (in your master resume)",
+    "recommendationsLabel": "Recommendations",
+    "interpretations": {
+      "excellent": "Excellent match",
+      "strong": "Strong match",
+      "moderate": "Moderate match",
+      "weak": "Weak match",
+      "poor": "Poor match"
     }
   }
 }

@@ -9,12 +9,14 @@ import type {
 import { getSortedSections, getSectionMeta } from '@/lib/utils/section-helpers';
 import { formatDateRange } from '@/lib/utils';
 import { DescriptionList } from './description-list';
+import { ResumePhoto } from './resume-photo';
 import baseStyles from './styles/_base.module.css';
 import styles from './styles/vivid.module.css';
 
 interface ResumeVividProps {
   data: ResumeData;
   showContactIcons?: boolean;
+  showPhoto?: boolean;
   sectionHeadings?: Partial<ResumeSectionHeadings>;
   fallbackLabels?: Partial<ResumeFallbackLabels>;
 }
@@ -33,6 +35,7 @@ interface ResumeVividProps {
 export const ResumeVivid: React.FC<ResumeVividProps> = ({
   data,
   showContactIcons = false,
+  showPhoto = false,
   sectionHeadings,
   fallbackLabels,
 }) => {
@@ -149,22 +152,25 @@ export const ResumeVivid: React.FC<ResumeVividProps> = ({
   return (
     <>
       {/* Header */}
-      <div className={baseStyles['resume-header']}>
-        <h1 className={baseStyles['resume-name']}>
-          <span className={styles.nameFirst}>{nameFirst}</span>
-          {nameRest && <span className={styles.nameRest}> {nameRest}</span>}
-        </h1>
-        {personalInfo?.title && <div className={styles.titleLine}>{personalInfo.title}</div>}
-        {personalInfo && (
-          <div className={`flex flex-wrap gap-x-4 gap-y-1 mt-2 ${styles.contactRow}`}>
-            {renderContactDetail('Website', personalInfo.website)}
-            {renderContactDetail('LinkedIn', personalInfo.linkedin)}
-            {renderContactDetail('GitHub', personalInfo.github)}
-            {renderContactDetail('Email', personalInfo.email, 'mailto:')}
-            {renderContactDetail('Phone', personalInfo.phone, 'tel:')}
-            {renderContactDetail('Location', personalInfo.location)}
-          </div>
-        )}
+      <div className={`flex items-center gap-4 ${baseStyles['resume-header']}`}>
+        <ResumePhoto personalInfo={personalInfo} showPhoto={showPhoto} className="w-16" />
+        <div className="min-w-0 flex-1">
+          <h1 className={baseStyles['resume-name']}>
+            <span className={styles.nameFirst}>{nameFirst}</span>
+            {nameRest && <span className={styles.nameRest}> {nameRest}</span>}
+          </h1>
+          {personalInfo?.title && <div className={styles.titleLine}>{personalInfo.title}</div>}
+          {personalInfo && (
+            <div className={`flex flex-wrap gap-x-4 gap-y-1 mt-2 ${styles.contactRow}`}>
+              {renderContactDetail('Website', personalInfo.website)}
+              {renderContactDetail('LinkedIn', personalInfo.linkedin)}
+              {renderContactDetail('GitHub', personalInfo.github)}
+              {renderContactDetail('Email', personalInfo.email, 'mailto:')}
+              {renderContactDetail('Phone', personalInfo.phone, 'tel:')}
+              {renderContactDetail('Location', personalInfo.location)}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Two-Column Grid */}

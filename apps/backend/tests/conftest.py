@@ -23,6 +23,7 @@ def sample_resume() -> dict:
             "website": "https://janedoe.dev",
             "linkedin": "linkedin.com/in/janedoe",
             "github": "github.com/janedoe",
+            "photo": None,
         },
         "summary": "Backend engineer with 6 years of experience building scalable Python APIs and microservices.",
         "workExperience": [

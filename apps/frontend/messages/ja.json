@@ -99,7 +99,8 @@
       "dropzoneSubtitle": "PDF、DOC、DOCX（最大 4MB）",
       "tryDifferentFile": "別のファイルを試す",
       "parsingFailedKeepOpen": "AI 解析に失敗しました。別のファイルを試すか、このダイアログを閉じてください。"
-    }
+    },
+    "atsScore": "求人票に対するATSスコア"
   },
   "builder": {
     "title": "履歴書ビルダー",
@@ -450,7 +451,10 @@
       "effectiveHeaderFont": "見出しフォント",
       "effectiveBodyFont": "本文フォント",
       "compactHint": "コンパクトモードでは間隔と行間が詰まります。余白と本文フォントサイズは維持されます。",
-      "resetDefaults": "デフォルトに戻す"
+      "resetDefaults": "デフォルトに戻す",
+      "onePage": "1ページの履歴書",
+      "onePageHint": "レイアウトと間隔を狭めます。新しいテーラリングでは、Tailorページでも有効化すると内容自体も圧縮されます。",
+      "showPhoto": "写真を表示"
     },
     "personalInfoForm": {
       "placeholders": {
@@ -462,6 +466,19 @@
         "website": "portfolio.com",
         "linkedin": "linkedin.com/in/taro",
         "github": "github.com/taro"
+      },
+      "photo": {
+        "label": "プロフィール写真（任意）",
+        "hint": "「フォーマット」で写真設定を有効にすると表示されます。欧州やアジアでは一般的ですが、米国のATSでは除外されがちです。",
+        "previewAlt": "プロフィール写真のプレビュー",
+        "upload": "アップロード",
+        "replace": "置き換え",
+        "remove": "削除",
+        "errors": {
+          "format": "対応していない画像形式です。JPEG、PNG、WebPを使用してください。",
+          "tooLarge": "写真が大きすぎます。1.5MB以下にしてください。",
+          "read": "画像ファイルを読み込めませんでした。もう一度お試しください。"
+        }
       }
     },
     "leftPanel": {
@@ -610,6 +627,18 @@
       "failedToGenerate": "履歴書を生成できませんでした。設定で API キーを確認してから、もう一度お試しください。",
       "failedToPreview": "履歴書をプレビューできませんでした。設定で API キーを確認してから、もう一度お試しください。",
       "failedToConfirm": "変更を適用できませんでした。もう一度お試しください。"
+    },
+    "onePage": {
+      "label": "1ページの履歴書",
+      "description": "最も関連性の高い簡潔な内容のみを残し、1ページに収めます"
+    },
+    "tokenInfo": {
+      "title": "テーラリングモードの違い（LLM使用量）",
+      "intro": "すべてのモードは同じパイプライン（キーワード抽出、差分生成、マルチパス改良）を実行するため、トークン消費は同程度です。違いはAIが編集を許される範囲です：",
+      "nudge": "最小限の言い換えのみ — 新しい箇条書きなし、逸脱リスク最小",
+      "keywords": "既存の箇条書きを言い換えて求人のキーワードを織り込む — ATS向上と正確性のバランスが最適",
+      "full": "箇条書きの拡張や既存の業務を深掘りする項目の追加が可能 — ATS向上は最大だが、確認が最も必要",
+      "note": "モードは編集指示のみを変更し、LLM呼び出し回数は変わらないため、コストはほぼ同じです。"
     }
   },
   "settings": {
@@ -791,7 +820,8 @@
       "failedToLoad": "履歴書データの読み込みに失敗しました。",
       "failedToDelete": "履歴書の削除に失敗しました。もう一度お試しください。"
     },
-    "titlePlaceholder": "履歴書のタイトルを入力..."
+    "titlePlaceholder": "履歴書のタイトルを入力...",
+    "atsScoreTitle": "ATSスコア（この求人に対して）"
   },
   "preview": {
     "margins": "余白",
@@ -1011,7 +1041,8 @@
       "roleUnknown": "役職名なし",
       "sharedResume": "共有された履歴書",
       "selectAria": "応募を選択",
-      "dragAria": "ドラッグして並べ替え"
+      "dragAria": "ドラッグして並べ替え",
+      "atsScore": "テーラリング済み履歴書のATSスコア"
     },
     "modal": {
       "jobDescription": "求人内容",
@@ -1021,7 +1052,8 @@
       "saveNotes": "メモを保存",
       "resumeUnavailable": "応募した履歴書は利用できなくなりました。",
       "loadFailed": "この応募を読み込めませんでした。",
-      "editResume": "履歴書を編集"
+      "editResume": "履歴書を編集",
+      "atsScore": "ATSスコア"
     },
     "bulk": {
       "selected": "{count} 件選択中",
@@ -1068,6 +1100,33 @@
       "projectFollowUps": "プロジェクト深掘り質問",
       "skillGaps": "スキルギャップ",
       "talkingPoints": "話すべき要点"
+    }
+  },
+  "atsCard": {
+    "title": "ATSスコア内訳",
+    "improvementLabel": "元の履歴書との差分",
+    "baselineLabel": "元の履歴書",
+    "subScoresLabel": "構成要素のスコア",
+    "subScores": {
+      "keyword_match": "キーワード一致",
+      "skills_coverage": "スキル網羅率",
+      "semantic_similarity": "内容の一致度",
+      "experience_alignment": "経験の適合度",
+      "education_match": "学歴の一致",
+      "section_completeness": "セクションの完全性",
+      "formatting_quality": "フォーマット品質",
+      "impact_quality": "インパクトと実績"
+    },
+    "matchedKeywordsLabel": "一致したキーワード",
+    "missingKeywordsLabel": "不足しているキーワード",
+    "injectableKeywordsLabel": "安全に追加可能（マスター履歴書にあり）",
+    "recommendationsLabel": "推奨事項",
+    "interpretations": {
+      "excellent": "非常に高い一致",
+      "strong": "高い一致",
+      "moderate": "中程度の一致",
+      "weak": "低い一致",
+      "poor": "非常に低い一致"
     }
   }
 }

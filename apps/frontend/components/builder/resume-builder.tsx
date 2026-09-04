@@ -40,11 +40,13 @@ import {
   updateResume,
   updateCoverLetter,
   updateOutreachMessage,
+  updateTemplateSettings,
   generateCoverLetter,
   generateOutreachMessage,
   generateInterviewPrep,
   fetchJobDescription,
 } from '@/lib/api/resume';
+import { fetchFeatureConfig } from '@/lib/api/config';
 import { JDComparisonView } from './jd-comparison-view';
 import { RegenerateWizard } from './regenerate-wizard';
 import { useRegenerateWizard } from '@/hooks/use-regenerate-wizard';
@@ -373,6 +375,22 @@ const ResumeBuilderContent = () => {
     safeStorage.set(SETTINGS_STORAGE_KEY, JSON.stringify(templateSettings));
   }, [templateSettings]);
 
+  // Server-side per-resume settings sync. Guarded by settingsHydratedRef so we
+  // never push the localStorage/global defaults over the server copy before
+  // the resume (and its saved settings) have actually been loaded.
+  const settingsHydratedRef = useRef(false);
+  useEffect(() => {
+    if (!resumeId || loadingState !== 'loaded' || !settingsHydratedRef.current) return;
+    const timer = setTimeout(() => {
+      updateTemplateSettings(resumeId, templateSettings).catch((err) => {
+        // Best-effort: the localStorage copy above still preserves the look
+        // for this browser; never block editing on a settings save failure.
+        console.warn('Failed to persist template settings to server:', err);
+      });
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [templateSettings, resumeId, loadingState]);
+
   // Warn user before leaving with unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -407,6 +425,24 @@ const ResumeBuilderContent = () => {
           setIsTailoredResume(Boolean(data.parent_id));
           // Store resume title for downloads
           setResumeTitle(data.title ?? null);
+          // Hydrate per-resume template settings from the server (falls back
+          // to the global localStorage settings when none were saved yet).
+          const serverSettings = data.template_settings as TemplateSettings | null | undefined;
+          if (
+            serverSettings &&
+            typeof serverSettings === 'object' &&
+            'template' in serverSettings
+          ) {
+            setTemplateSettings((prev) => ({
+              ...DEFAULT_TEMPLATE_SETTINGS,
+              ...prev,
+              ...serverSettings,
+              margins: { ...DEFAULT_TEMPLATE_SETTINGS.margins, ...serverSettings.margins },
+              spacing: { ...DEFAULT_TEMPLATE_SETTINGS.spacing, ...serverSettings.spacing },
+              fontSize: { ...DEFAULT_TEMPLATE_SETTINGS.fontSize, ...serverSettings.fontSize },
+            }));
+          }
+          settingsHydratedRef.current = true;
           // Load cover letter and outreach message if available
           if (data.cover_letter) {
             setCoverLetter(data.cover_letter);
@@ -572,6 +608,50 @@ const ResumeBuilderContent = () => {
     setTemplateSettings(newSettings);
   }, []);
 
+    // Inject default photo from global settings if showPhoto is enabled but no photo exists
+    useEffect(() => {
+      // Wait until the resume has fully loaded from the backend so we don't 
+      // get overwritten by the initial fetch!
+      if (loadingState !== 'loaded' || !templateSettings.showPhoto || !resumeId) return;
+      
+      // If the resume already has a photo, do nothing
+      if (resumeData.personalInfo?.photo) return;
+  
+      let cancelled = false;
+      const injectDefaultPhoto = async () => {
+        try {
+          const featureConfig = await fetchFeatureConfig();
+          if (cancelled || !featureConfig?.default_photo) return;
+  
+          // Only update if we still don't have a photo
+          setResumeData((prev) => {
+            if (prev.personalInfo?.photo) return prev;
+            
+            // Bump the edit version and mark as unsaved so autosave/flush saves it!
+            editVersionRef.current += 1;
+            unsyncedSinceRef.current ??= Date.now();
+            setHasUnsavedChanges(true);
+            setAutoSaveError(null);
+  
+            const newData = {
+              ...prev,
+              personalInfo: {
+                ...prev.personalInfo,
+                photo: featureConfig.default_photo,
+              },
+            };
+            // Auto-save draft to localStorage
+            writeStoredResumeDraft(resumeId, newData);
+            return newData;
+          });
+        } catch (err) {
+          console.warn('Failed to fetch default photo for injection:', err);
+        }
+      };
+  
+      injectDefaultPhoto();
+      return () => { cancelled = true; };
+    }, [templateSettings.showPhoto, resumeId, resumeData.personalInfo?.photo, loadingState]);
   const queueResumeSave = useCallback(
     (editorData: ResumeData) => {
       if (!resumeId) {

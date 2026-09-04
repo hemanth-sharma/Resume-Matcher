@@ -19,7 +19,7 @@ from app.prompts import (
     SKILL_TARGET_PLAN_PROMPT,
     get_language_name,
 )
-from app.prompts.templates import IMPROVE_SCHEMA_EXAMPLE
+from app.prompts.templates import IMPROVE_SCHEMA_EXAMPLE, ONE_PAGE_RESUME_CONSTRAINT
 from app.schemas import ResumeData, ResumeFieldDiff, ResumeDiffSummary
 from app.schemas.models import ImproveDiffResult, ResumeChange
 
@@ -511,6 +511,7 @@ async def generate_resume_diffs(
     prompt_id: str | None = None,
     original_resume_data: dict[str, Any] | None = None,
     skill_targets: list[dict[str, Any]] | None = None,
+    one_page: bool = False,
 ) -> ImproveDiffResult:
     """Generate targeted resume diffs via LLM.
 
@@ -525,6 +526,7 @@ async def generate_resume_diffs(
         prompt_id: Strategy id (nudge/keywords/full)
         original_resume_data: Structured resume JSON
         skill_targets: Verified skill targets from the planning pass
+        one_page: Instruct the LLM to condense content to a single page
 
     Returns:
         ImproveDiffResult with list of changes and strategy notes
@@ -541,6 +543,8 @@ async def generate_resume_diffs(
     strategy_instruction = DIFF_STRATEGY_INSTRUCTIONS.get(
         selected_id, DIFF_STRATEGY_INSTRUCTIONS[DEFAULT_IMPROVE_PROMPT_ID]
     )
+    if one_page:
+        strategy_instruction += ONE_PAGE_RESUME_CONSTRAINT
 
     # LLM-011: Sanitize job description
     sanitized_jd = _sanitize_user_input(job_description)
@@ -914,6 +918,7 @@ async def improve_resume(
     language: str = "en",
     prompt_id: str | None = None,
     original_resume_data: dict[str, Any] | None = None,
+    one_page: bool = False,
 ) -> dict[str, Any]:
     """Improve resume to better match job description.
 
@@ -925,6 +930,7 @@ async def improve_resume(
         prompt_id: Which tailor prompt to use
         original_resume_data: Structured resume JSON; used instead of
             markdown when available for higher-fidelity LLM input
+        one_page: Instruct the LLM to condense content to a single page
 
     Returns:
         Improved resume data matching ResumeData schema
@@ -974,6 +980,8 @@ async def improve_resume(
         output_language=output_language,
         critical_truthfulness_rules=truthfulness_rules,
     )
+    if one_page:
+        prompt += ONE_PAGE_RESUME_CONSTRAINT
 
     result = await complete_json(
         prompt=prompt,
