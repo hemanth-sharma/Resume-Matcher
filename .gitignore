@@ -1,5 +1,5 @@
 # .gitignore (in your-project-root/apps/backend/)
-
+.vscode
 # Virtual Environment
 venv/
 .venv/
