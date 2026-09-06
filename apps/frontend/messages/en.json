@@ -30,7 +30,8 @@
     "unknown": "Unknown",
     "keysCleared": "API keys cleared successfully",
     "databaseReset": "Database reset successfully",
-    "popupBlocked": "Popup blocked. Please allow popups or open this URL manually: {url}"
+    "popupBlocked": "Popup blocked. Please allow popups or open this URL manually: {url}",
+    "refresh": "Refresh"
   },
   "home": {
     "brandLine1": "Resume",
@@ -45,7 +46,8 @@
     "settings": "Settings",
     "backToDashboard": "Back to Dashboard",
     "goToSettings": "Go to Settings",
-    "applicationTracker": "Application Tracker"
+    "applicationTracker": "Application Tracker",
+    "atsCheck": "ATS Check"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1127,6 +1129,70 @@
       "moderate": "Moderate match",
       "weak": "Weak match",
       "poor": "Poor match"
+    }
+  },
+  "atsCheck": {
+    "title": "ATS Resume Check",
+    "subtitle": "Upload a resume PDF — get its ATS score instantly",
+    "uploadZone": "Drag & drop your resume PDF here, or click to browse",
+    "uploading": "Analyzing resume…",
+    "onlyPdfHint": "PDF only · max 4MB",
+    "noLlmNeeded": "Standalone check — no LLM configuration required",
+    "resultPlaceholder": "Your ATS score and report will appear here after you upload a resume",
+    "checkFailed": "Check failed",
+    "scoreLabel": "Total ATS score",
+    "historyTitle": "Previous Checks",
+    "historyEmpty": "No checks yet. Upload a resume to see its ATS score.",
+    "entry": "entry",
+    "entries": "entries",
+    "sourceManual": "manual upload",
+    "sourceFolderWatch": "folder watch",
+    "viewDetails": "View details",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete this ATS check?",
+    "deleteConfirmDescription": "This permanently removes the score record and its archived PDF copy.",
+    "failedBadge": "Failed",
+    "pendingBadge": "Processing",
+    "backToChecks": "Back to ATS checks",
+    "watcherHint": "Tip: run the folder watcher script (scripts/ats_folder_watcher.py) to automatically check every PDF dropped into a monitored folder — scores appear in this list with the \"folder watch\" source.",
+    "errors": {
+      "onlyPdf": "Only PDF files are supported.",
+      "tooLarge": "File exceeds the 4MB limit.",
+      "uploadFailed": "Upload failed. Please try again."
+    },
+    "report": {
+      "title": "ATS Score Report",
+      "subScoresLabel": "Component Scores",
+      "subScores": {
+        "contact_info": "Contact Information",
+        "section_completeness": "Section Completeness",
+        "formatting_quality": "Formatting Quality",
+        "impact_quality": "Impact & Achievements",
+        "keyword_optimization": "Keyword Optimization",
+        "readability_structure": "Readability & Structure"
+      },
+      "interpretations": {
+        "excellent": "Excellent",
+        "strong": "Strong",
+        "moderate": "Moderate",
+        "weak": "Weak",
+        "poor": "Poor",
+        "unknown": "Unknown"
+      },
+      "contactFieldsLabel": "Contact Fields Detected",
+      "contactFields": {
+        "email": "Email",
+        "phone": "Phone",
+        "link": "Link",
+        "location": "Location",
+        "name": "Name"
+      },
+      "words": "Words",
+      "bullets": "Bullets",
+      "dateRanges": "Date Ranges",
+      "skillsFound": "Skills Found",
+      "quantified": "Quantified",
+      "recommendationsLabel": "Recommendations"
     }
   }
 }

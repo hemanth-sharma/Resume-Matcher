@@ -1,7 +1,7 @@
 """Resume improvement service using LLM."""
 
 import copy
-import json
+import json, time
 import logging
 import re
 from difflib import SequenceMatcher
@@ -544,6 +544,8 @@ async def generate_resume_diffs(
         selected_id, DIFF_STRATEGY_INSTRUCTIONS[DEFAULT_IMPROVE_PROMPT_ID]
     )
     if one_page:
+        time.sleep(10)
+        print("ONe Page 1: ", one_page)
         strategy_instruction += ONE_PAGE_RESUME_CONSTRAINT
 
     # LLM-011: Sanitize job description
@@ -981,6 +983,8 @@ async def improve_resume(
         critical_truthfulness_rules=truthfulness_rules,
     )
     if one_page:
+        time.sleep(10)
+        print("ONe Page 2: ", one_page)
         prompt += ONE_PAGE_RESUME_CONSTRAINT
 
     result = await complete_json(

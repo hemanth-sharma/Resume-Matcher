@@ -30,7 +30,8 @@
     "unknown": "不明",
     "keysCleared": "APIキーが正常にクリアされました",
     "databaseReset": "データベースが正常にリセットされました",
-    "popupBlocked": "ポップアップがブロックされました。ポップアップを許可するか、次のURLを手動で開いてください: {url}"
+    "popupBlocked": "ポップアップがブロックされました。ポップアップを許可するか、次のURLを手動で開いてください: {url}",
+    "refresh": "更新"
   },
   "home": {
     "brandLine1": "履歴書",
@@ -45,7 +46,8 @@
     "settings": "設定",
     "backToDashboard": "ダッシュボードに戻る",
     "goToSettings": "設定へ",
-    "applicationTracker": "応募トラッカー"
+    "applicationTracker": "応募トラッカー",
+    "atsCheck": "ATSチェック"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -1127,6 +1129,70 @@
       "moderate": "中程度の一致",
       "weak": "低い一致",
       "poor": "非常に低い一致"
+    }
+  },
+  "atsCheck": {
+    "title": "ATSレジュメチェック",
+    "subtitle": "レジュメPDFをアップロードして、ATSスコアを即座に確認",
+    "uploadZone": "レジュメPDFをドラッグ＆ドロップ、またはクリックして選択",
+    "uploading": "レジュメを分析中…",
+    "onlyPdfHint": "PDFのみ・最大4MB",
+    "noLlmNeeded": "スタンドアロンチェック — LLMの設定は不要です",
+    "resultPlaceholder": "レジュメをアップロードすると、ここにATSスコアとレポートが表示されます",
+    "checkFailed": "チェック失敗",
+    "scoreLabel": "ATS合計スコア",
+    "historyTitle": "過去のチェック",
+    "historyEmpty": "まだチェックはありません。レジュメをアップロードしてATSスコアを確認してください。",
+    "entry": "件",
+    "entries": "件",
+    "sourceManual": "手動アップロード",
+    "sourceFolderWatch": "フォルダ監視",
+    "viewDetails": "詳細を見る",
+    "delete": "削除",
+    "deleteConfirmTitle": "このATSチェックを削除しますか？",
+    "deleteConfirmDescription": "スコア記録とアーカイブされたPDFコピーが完全に削除されます。",
+    "failedBadge": "失敗",
+    "pendingBadge": "処理中",
+    "backToChecks": "ATSチェックに戻る",
+    "watcherHint": "ヒント：監視スクリプト（scripts/ats_folder_watcher.py）を実行すると、監視フォルダに置かれたすべてのPDFを自動でチェックできます — スコアは「フォルダ監視」としてこの一覧に表示されます。",
+    "errors": {
+      "onlyPdf": "PDFファイルのみ対応しています。",
+      "tooLarge": "ファイルが4MBの上限を超えています。",
+      "uploadFailed": "アップロードに失敗しました。もう一度お試しください。"
+    },
+    "report": {
+      "title": "ATSスコアレポート",
+      "subScoresLabel": "コンポーネント別スコア",
+      "subScores": {
+        "contact_info": "連絡先情報",
+        "section_completeness": "セクション完全性",
+        "formatting_quality": "フォーマット品質",
+        "impact_quality": "インパクトと実績",
+        "keyword_optimization": "キーワード最適化",
+        "readability_structure": "読みやすさと構成"
+      },
+      "interpretations": {
+        "excellent": "優秀",
+        "strong": "良好",
+        "moderate": "普通",
+        "weak": "やや弱い",
+        "poor": "不十分",
+        "unknown": "不明"
+      },
+      "contactFieldsLabel": "検出された連絡先フィールド",
+      "contactFields": {
+        "email": "メール",
+        "phone": "電話",
+        "link": "リンク",
+        "location": "所在地",
+        "name": "氏名"
+      },
+      "words": "単語数",
+      "bullets": "箇条書き",
+      "dateRanges": "期間",
+      "skillsFound": "検出スキル",
+      "quantified": "数値実績",
+      "recommendationsLabel": "改善の提案"
     }
   }
 }

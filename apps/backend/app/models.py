@@ -9,7 +9,7 @@ never sees ORM objects — preserving the TinyDB-era contracts.
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, Index, Integer, String, Text, UniqueConstraint, text
+from sqlalchemy import JSON, Boolean, Float, Index, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -142,4 +142,37 @@ class ApiKey(Base):
 
     provider: Mapped[str] = mapped_column(String, primary_key=True)
     ciphertext: Mapped[str] = mapped_column(Text)
+    updated_at: Mapped[str] = mapped_column(String, default=_utcnow_iso)
+
+
+class AtsCheck(Base):
+    """A standalone ATS check of an uploaded resume PDF.
+
+    Completely independent from the tailoring pipeline: a file goes in, a
+    deterministic (no-LLM) ATS score comes out. ``id`` is a monotonically
+    increasing integer so archived copies can be renamed
+    ``{user}_Resume_{id}.pdf`` (the "count" in the user-facing name).
+    """
+
+    __tablename__ = "ats_checks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    # Original filename as uploaded (kept verbatim for the history list).
+    file_name: Mapped[str] = mapped_column(String)
+    # Absolute/relative path of the renamed archive copy, when archiving
+    # succeeded (``{ATS_USER_NAME}_Resume_{id}.pdf`` in ``ATS_ARCHIVE_DIR``).
+    stored_path: Mapped[str | None] = mapped_column(String, nullable=True)
+    # "processing" | "ready" | "failed"
+    status: Mapped[str] = mapped_column(String, default="processing", index=True)
+    overall_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # Per-component sub-scores dict (contact_info, formatting_quality, …).
+    sub_scores: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Full standalone ATS payload (score_data, recommendations, details…).
+    score_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    # Extracted markdown text (kept so a check can be re-inspected/re-scored).
+    content_markdown: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # "manual" (frontend upload) | "folder_watch" (watcher script upload)
+    source: Mapped[str] = mapped_column(String, default="manual", index=True)
+    error: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[str] = mapped_column(String, default=_utcnow_iso)
     updated_at: Mapped[str] = mapped_column(String, default=_utcnow_iso)

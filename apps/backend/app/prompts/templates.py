@@ -243,6 +243,8 @@ IMPROVE_RESUME_PROMPT_NUDGE = """Lightly nudge this resume toward the job descri
 
 {critical_truthfulness_rules}
 
+{ats_optimization_rules}
+
 IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_language}.
 Do NOT include personalInfo in your output - it will be preserved from the original resume.
 
@@ -275,12 +277,14 @@ IMPROVE_RESUME_PROMPT_KEYWORDS = """Enhance this resume with relevant keywords f
 
 {critical_truthfulness_rules}
 
+{ats_optimization_rules}
+
 IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_language}.
 Do NOT include personalInfo in your output - it will be preserved from the original resume.
 
 Rules:
 - Strengthen alignment by weaving in relevant keywords where evidence already exists
-- You may rephrase bullet points to include keyword phrasing
+- You may rephrase bullet points to include exact keyword phrasing from the job description
 - Do NOT introduce new skills, tools, or certifications not in the resume
 - Do NOT change role, industry, or seniority level
 - Preserve descriptionStyles arrays and keep them aligned one-to-one with description arrays
@@ -304,6 +308,8 @@ Output in this JSON format:
 IMPROVE_RESUME_PROMPT_FULL = """Tailor this resume for the job. Output ONLY the JSON object, no other text.
 
 {critical_truthfulness_rules}
+
+{ats_optimization_rules}
 
 IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_language}.
 Do NOT include personalInfo in your output - it will be preserved from the original resume.
@@ -483,24 +489,53 @@ RESUME_SCHEMA = RESUME_SCHEMA_EXAMPLE
 
 # Diff-based improvement: outputs targeted changes instead of full resume
 
+# DIFF_STRATEGY_INSTRUCTIONS = {
+#     "nudge": "Make minimal edits. Only rephrase where there is a clear match. Do not add new bullet points.",
+#     "keywords": "Weave in relevant keywords where evidence already exists. You may rephrase bullets but do not add new ones.",
+#     "full": "Make targeted adjustments. You may rephrase bullets, add verified JD skills, and add new bullets that elaborate on existing work, but do not invent new responsibilities.",
+# }
 DIFF_STRATEGY_INSTRUCTIONS = {
-    "nudge": "Make minimal edits. Only rephrase where there is a clear match. Do not add new bullet points.",
-    "keywords": "Weave in relevant keywords where evidence already exists. You may rephrase bullets but do not add new ones.",
-    "full": "Make targeted adjustments. You may rephrase bullets, add verified JD skills, and add new bullets that elaborate on existing work, but do not invent new responsibilities.",
+    "nudge": "ATS Light Alignment: Make minimal edits to better align existing experience. Where the resume already demonstrates a job-description keyword, rephrase that specific bullet to use the exact terminology from the job description. Fix formatting for maximum ATS readability.",
+    "keywords": "ATS Keyword Match: Aggressively inject and rephrase content to exactly match job description keywords without changing the core scope. Surface any existing quantifiable metrics (%, $, x) to the front of the bullet points to maximize impact scoring.",
+    "full": "ATS Full Tailor: Deeply integrate all job description requirements into experience bullets. Maximize exact-phrase matching with the job description. Ensure every bullet is structured as an action-verb led achievement with existing metrics highlighted.",
 }
+
 
 # Appended to tailoring prompts when the user requests a one-page resume.
 # Content-level condensation (the layout is handled by compact template
 # settings); mirrors how a human editor trims a resume to a single page.
+
+# ONE_PAGE_RESUME_CONSTRAINT = """
+
+# ONE-PAGE CONSTRAINT - CRITICAL:
+# The tailored resume MUST fit on a single page (A4/US Letter). Prioritize ruthlessly:
+# 1. Keep only the bullets most relevant to this job; merge or drop the rest.
+# 2. Rephrase remaining bullets to be concise - aim for one line each, two at most.
+# 3. Limit the summary to 2-3 lines and keep the skills list focused on JD-relevant items.
+# 4. If space is tight, keep the most recent 2-3 roles and drop older or irrelevant ones.
+# 5. Never fabricate or inflate content to save space - cut instead. Truthfulness rules still apply.
+# """
 ONE_PAGE_RESUME_CONSTRAINT = """
 
 ONE-PAGE CONSTRAINT - CRITICAL:
-The tailored resume MUST fit on a single page (A4/US Letter). Prioritize ruthlessly:
-1. Keep only the bullets most relevant to this job; merge or drop the rest.
-2. Rephrase remaining bullets to be concise - aim for one line each, two at most.
-3. Limit the summary to 2-3 lines and keep the skills list focused on JD-relevant items.
-4. If space is tight, keep the most recent 2-3 roles and drop older or irrelevant ones.
-5. Never fabricate or inflate content to save space - cut instead. Truthfulness rules still apply.
+The tailored resume MUST fit on a single page pdf. Prioritize ruthlessly based on ATS relevance:
+1. Keep only the bullets that contain the highest density of exact job description keywords.
+2. Merge or rephrase bullet points which can be merged. And pick bullet points which are relevant for the job role in job description and remove bullets which aren't relevant for the current role.
+3. If a bullet contains a quantifiable metric (%, $, x) AND is relevant to the JD, keep it.
+4. Drop bullets that are purely descriptive and lack JD keywords or metrics.
+5. Rephrase remaining bullets to be concise - aim for one line each, two at most.
+6. Limit the summary to 2-3 lines and keep the skills list focused strictly on JD-relevant items.
+7. If space is tight, keep the most recent 2-3 roles and drop older or irrelevant ones.
+8. Never fabricate metrics to save space - cut instead. Truthfulness rules still apply.
+9. Limit the bullets around 4-5 lines (mostly single lines), you may add more for relevant stuffs.
+"""
+
+# 3. Add ATS Optimization Rules to the main prompts
+ATS_OPTIMIZATION_RULES = """
+ATS OPTIMIZATION RULES - MAXIMIZE SCORE:
+1. Exact Match: If the resume describes a concept, tool, or methodology that is explicitly named in the job description, rewrite the text to use the EXACT terminology from the job description.
+2. Metric Surfacing: If a bullet point contains a quantifiable achievement (e.g., '20%', '$1M', '5x', 'reduced by half'), ensure that metric is moved to the beginning of the bullet and prominently featured. Do not hide metrics in the middle of a long sentence.
+3. Action Verbs: Start every experience bullet with a strong action verb.
 """
 
 SKILL_TARGET_PLAN_PROMPT = """Build a concise skill target plan for tailoring this resume to the job.

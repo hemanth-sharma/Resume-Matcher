@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import settings
 from app.db_engine import init_models_sync, make_async_engine, make_sync_engine
-from app.models import ApiKey, Application, Improvement, Job, Resume
+from app.models import ApiKey, Application, AtsCheck, Improvement, Job, Resume
 
 logger = logging.getLogger(__name__)
 
@@ -747,6 +747,130 @@ class Database:
             await session.commit()
         return deleted
 
+    # -- Standalone ATS checks ----------------------------------------------
+
+    @staticmethod
+    def _ats_check_to_dict(row: AtsCheck, include_content: bool = False) -> dict[str, Any]:
+        """Convert an AtsCheck row to a plain dict.
+
+        ``content_markdown`` is bulky and rarely needed — it is only included
+        when ``include_content`` is set (detail views), never in list views.
+        """
+        doc: dict[str, Any] = {
+            "id": row.id,
+            "file_name": row.file_name,
+            "stored_path": row.stored_path,
+            "status": row.status,
+            "overall_score": row.overall_score,
+            "sub_scores": row.sub_scores,
+            "score_data": row.score_data,
+            "source": row.source,
+            "error": row.error,
+            "created_at": row.created_at,
+            "updated_at": row.updated_at,
+        }
+        if include_content:
+            doc["content_markdown"] = row.content_markdown
+        return doc
+
+    async def create_ats_check(
+        self,
+        file_name: str,
+        source: str = "manual",
+        content_markdown: str | None = None,
+        status: str = "processing",
+    ) -> dict[str, Any]:
+        """Create a new ATS check record (status starts at 'processing').
+
+        The autoincrement integer ``id`` doubles as the archive rename count
+        (``{user}_Resume_{id}.pdf``).
+        """
+        now = _now()
+        async with self._session() as session:
+            row = AtsCheck(
+                file_name=file_name,
+                source=source,
+                content_markdown=content_markdown,
+                status=status,
+                created_at=now,
+                updated_at=now,
+            )
+            session.add(row)
+            await session.commit()
+            await session.refresh(row)
+            return self._ats_check_to_dict(row)
+
+    async def update_ats_check(
+        self, check_id: int, updates: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """Update an ATS check record (status, scores, stored_path, …)."""
+        async with self._session() as session:
+            row = await session.get(AtsCheck, check_id)
+            if row is None:
+                return None
+            allowed = {
+                "status",
+                "overall_score",
+                "sub_scores",
+                "score_data",
+                "stored_path",
+                "error",
+                "content_markdown",
+            }
+            for key, value in updates.items():
+                if key in allowed:
+                    setattr(row, key, value)
+            row.updated_at = _now()
+            await session.commit()
+            await session.refresh(row)
+            return self._ats_check_to_dict(row)
+
+    async def get_ats_check(
+        self, check_id: int, include_content: bool = False
+    ) -> dict[str, Any] | None:
+        """Get one ATS check by ID (with full score payload)."""
+        async with self._session() as session:
+            row = await session.get(AtsCheck, check_id)
+            if row is None:
+                return None
+            return self._ats_check_to_dict(row, include_content=include_content)
+
+    async def list_ats_checks(self) -> list[dict[str, Any]]:
+        """List all ATS checks, newest first (no bulky markdown)."""
+        async with self._session() as session:
+            result = await session.execute(
+                select(AtsCheck).order_by(AtsCheck.id.desc())
+            )
+            return [
+                self._ats_check_to_dict(row) for row in result.scalars().all()
+            ]
+
+    async def delete_ats_check(self, check_id: int) -> dict[str, Any] | None:
+        """Delete one ATS check; returns the deleted doc (for file cleanup)."""
+        async with self._session() as session:
+            row = await session.get(AtsCheck, check_id)
+            if row is None:
+                return None
+            doc = self._ats_check_to_dict(row)
+            await session.delete(row)
+            await session.commit()
+            return doc
+
+    async def clear_ats_checks(self) -> list[str]:
+        """Delete every ATS check; returns stored paths of archived files.
+
+        The caller decides whether to unlink the files (reset keeps the rest
+        of the user's data intact, so it mirrors that contract here).
+        """
+        async with self._session() as session:
+            paths = await session.execute(
+                select(AtsCheck.stored_path).where(AtsCheck.stored_path.is_not(None))
+            )
+            stored_paths = [p for (p,) in paths.all() if p]
+            await session.execute(delete(AtsCheck))
+            await session.commit()
+        return stored_paths
+
     # -- Encrypted API key store (sync; read on the LLM hot path) -----------
 
     def get_api_key_ciphertexts(self) -> dict[str, str]:
@@ -832,6 +956,19 @@ class Database:
             await session.execute(delete(Job))
             await session.execute(delete(Resume))
             await session.commit()
+
+        # Standalone ATS checks are user documents too — clear them and their
+        # archived (renamed) PDF copies. Unlink is best-effort per file.
+        try:
+            archived_paths = await self.clear_ats_checks()
+        except Exception as e:  # pragma: no cover - defensive
+            logger.warning("Failed to clear ATS checks during reset: %s", e)
+            archived_paths = []
+        for stored_path in archived_paths:
+            try:
+                Path(stored_path).unlink(missing_ok=True)
+            except OSError as e:
+                logger.warning("Could not remove archived ATS file %s: %s", stored_path, e)
 
         uploads_dir = settings.data_dir / "uploads"
         if uploads_dir.exists():

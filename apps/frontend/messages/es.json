@@ -30,7 +30,8 @@
     "unknown": "Desconocido",
     "keysCleared": "Claves API borradas con éxito",
     "databaseReset": "Base de datos restablecida con éxito",
-    "popupBlocked": "Se bloqueó la ventana emergente. Permite las ventanas emergentes o abre manualmente esta URL: {url}"
+    "popupBlocked": "Se bloqueó la ventana emergente. Permite las ventanas emergentes o abre manualmente esta URL: {url}",
+    "refresh": "Actualizar"
   },
   "home": {
     "brandLine1": "Currículum",
@@ -45,7 +46,8 @@
     "settings": "Configuración",
     "backToDashboard": "Volver al Panel",
     "goToSettings": "Ir a Configuración",
-    "applicationTracker": "Seguimiento de candidaturas"
+    "applicationTracker": "Seguimiento de candidaturas",
+    "atsCheck": "Chequeo ATS"
   },
   "dashboard": {
     "title": "Panel",
@@ -1127,6 +1129,70 @@
       "moderate": "Coincidencia moderada",
       "weak": "Coincidencia débil",
       "poor": "Coincidencia muy débil"
+    }
+  },
+  "atsCheck": {
+    "title": "Chequeo ATS del Currículum",
+    "subtitle": "Sube un PDF de tu currículum y obtén su puntuación ATS al instante",
+    "uploadZone": "Arrastra y suelta tu currículum PDF aquí, o haz clic para buscarlo",
+    "uploading": "Analizando currículum…",
+    "onlyPdfHint": "Solo PDF · máx. 4MB",
+    "noLlmNeeded": "Chequeo independiente — no requiere configurar ningún LLM",
+    "resultPlaceholder": "Tu puntuación ATS y tu informe aparecerán aquí después de subir un currículum",
+    "checkFailed": "El chequeo falló",
+    "scoreLabel": "Puntuación ATS total",
+    "historyTitle": "Chequeos anteriores",
+    "historyEmpty": "Aún no hay chequeos. Sube un currículum para ver su puntuación ATS.",
+    "entry": "registro",
+    "entries": "registros",
+    "sourceManual": "subida manual",
+    "sourceFolderWatch": "monitor de carpeta",
+    "viewDetails": "Ver detalles",
+    "delete": "Eliminar",
+    "deleteConfirmTitle": "¿Eliminar este chequeo ATS?",
+    "deleteConfirmDescription": "Esto elimina permanentemente el registro de puntuación y su copia PDF archivada.",
+    "failedBadge": "Fallido",
+    "pendingBadge": "Procesando",
+    "backToChecks": "Volver a los chequeos ATS",
+    "watcherHint": "Consejo: ejecuta el script de monitorización (scripts/ats_folder_watcher.py) para comprobar automáticamente cada PDF que sueltes en una carpeta vigilada — las puntuaciones aparecerán en esta lista con la fuente \"monitor de carpeta\".",
+    "errors": {
+      "onlyPdf": "Solo se admiten archivos PDF.",
+      "tooLarge": "El archivo supera el límite de 4MB.",
+      "uploadFailed": "Error al subir. Inténtalo de nuevo."
+    },
+    "report": {
+      "title": "Informe de puntuación ATS",
+      "subScoresLabel": "Puntuaciones por componente",
+      "subScores": {
+        "contact_info": "Información de contacto",
+        "section_completeness": "Secciones completas",
+        "formatting_quality": "Calidad del formato",
+        "impact_quality": "Impacto y logros",
+        "keyword_optimization": "Optimización de palabras clave",
+        "readability_structure": "Legibilidad y estructura"
+      },
+      "interpretations": {
+        "excellent": "Excelente",
+        "strong": "Fuerte",
+        "moderate": "Moderado",
+        "weak": "Débil",
+        "poor": "Pobre",
+        "unknown": "Desconocido"
+      },
+      "contactFieldsLabel": "Campos de contacto detectados",
+      "contactFields": {
+        "email": "Email",
+        "phone": "Teléfono",
+        "link": "Enlace",
+        "location": "Ubicación",
+        "name": "Nombre"
+      },
+      "words": "Palabras",
+      "bullets": "Viñetas",
+      "dateRanges": "Rangos de fechas",
+      "skillsFound": "Habilidades encontradas",
+      "quantified": "Cuantificados",
+      "recommendationsLabel": "Recomendaciones"
     }
   }
 }

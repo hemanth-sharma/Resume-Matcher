@@ -30,7 +30,8 @@
     "unknown": "未知",
     "keysCleared": "API密钥已成功清除",
     "databaseReset": "数据库已成功重置",
-    "popupBlocked": "弹窗被阻止。请允许弹窗或手动打开此链接：{url}"
+    "popupBlocked": "弹窗被阻止。请允许弹窗或手动打开此链接：{url}",
+    "refresh": "刷新"
   },
   "home": {
     "brandLine1": "简历",
@@ -45,7 +46,8 @@
     "settings": "设置",
     "backToDashboard": "返回仪表板",
     "goToSettings": "前往设置",
-    "applicationTracker": "申请追踪"
+    "applicationTracker": "申请追踪",
+    "atsCheck": "ATS 检测"
   },
   "dashboard": {
     "title": "仪表板",
@@ -1127,6 +1129,70 @@
       "moderate": "中等匹配",
       "weak": "匹配较弱",
       "poor": "匹配很差"
+    }
+  },
+  "atsCheck": {
+    "title": "简历 ATS 检测",
+    "subtitle": "上传简历 PDF，即刻获得 ATS 评分",
+    "uploadZone": "将简历 PDF 拖放到此处，或点击选择文件",
+    "uploading": "正在分析简历…",
+    "onlyPdfHint": "仅支持 PDF · 最大 4MB",
+    "noLlmNeeded": "独立检测 — 无需配置任何 LLM",
+    "resultPlaceholder": "上传简历后，ATS 评分与报告将显示在这里",
+    "checkFailed": "检测失败",
+    "scoreLabel": "ATS 总分",
+    "historyTitle": "历史检测记录",
+    "historyEmpty": "暂无检测记录。上传简历即可查看其 ATS 评分。",
+    "entry": "条记录",
+    "entries": "条记录",
+    "sourceManual": "手动上传",
+    "sourceFolderWatch": "文件夹监控",
+    "viewDetails": "查看详情",
+    "delete": "删除",
+    "deleteConfirmTitle": "删除这条 ATS 检测记录？",
+    "deleteConfirmDescription": "这将永久删除该评分记录及其归档的 PDF 副本。",
+    "failedBadge": "失败",
+    "pendingBadge": "处理中",
+    "backToChecks": "返回 ATS 检测列表",
+    "watcherHint": "提示：运行文件夹监控脚本（scripts/ats_folder_watcher.py），即可自动检测放入监控文件夹的每个 PDF — 评分会以「文件夹监控」来源显示在此列表中。",
+    "errors": {
+      "onlyPdf": "仅支持 PDF 文件。",
+      "tooLarge": "文件超过 4MB 限制。",
+      "uploadFailed": "上传失败，请重试。"
+    },
+    "report": {
+      "title": "ATS 评分报告",
+      "subScoresLabel": "各项得分",
+      "subScores": {
+        "contact_info": "联系信息",
+        "section_completeness": "章节完整性",
+        "formatting_quality": "排版质量",
+        "impact_quality": "影响力与成就",
+        "keyword_optimization": "关键词优化",
+        "readability_structure": "可读性与结构"
+      },
+      "interpretations": {
+        "excellent": "优秀",
+        "strong": "良好",
+        "moderate": "中等",
+        "weak": "偏弱",
+        "poor": "较差",
+        "unknown": "未知"
+      },
+      "contactFieldsLabel": "检测到的联系字段",
+      "contactFields": {
+        "email": "邮箱",
+        "phone": "电话",
+        "link": "链接",
+        "location": "所在地",
+        "name": "姓名"
+      },
+      "words": "词数",
+      "bullets": "要点条目",
+      "dateRanges": "日期区间",
+      "skillsFound": "识别到的技能",
+      "quantified": "量化成果",
+      "recommendationsLabel": "改进建议"
     }
   }
 }

@@ -30,7 +30,8 @@
     "unknown": "알 수 없음",
     "keysCleared": "API 키가 성공적으로 삭제되었습니다",
     "databaseReset": "데이터베이스가 성공적으로 초기화되었습니다",
-    "popupBlocked": "팝업이 차단되었습니다. 팝업을 허용하거나 다음 URL을 직접 열어주세요: {url}"
+    "popupBlocked": "팝업이 차단되었습니다. 팝업을 허용하거나 다음 URL을 직접 열어주세요: {url}",
+    "refresh": "새로고침"
   },
   "home": {
     "brandLine1": "Resume",
@@ -45,7 +46,8 @@
     "settings": "설정",
     "backToDashboard": "대시보드로 돌아가기",
     "goToSettings": "설정으로 이동",
-    "applicationTracker": "지원 현황 트래커"
+    "applicationTracker": "지원 현황 트래커",
+    "atsCheck": "ATS 검사"
   },
   "dashboard": {
     "title": "대시보드",
@@ -1127,6 +1129,70 @@
       "moderate": "보통 일치",
       "weak": "약한 일치",
       "poor": "매우 약한 일치"
+    }
+  },
+  "atsCheck": {
+    "title": "ATS 이력서 검사",
+    "subtitle": "이력서 PDF를 업로드하면 ATS 점수를 즉시 확인할 수 있습니다",
+    "uploadZone": "이력서 PDF를 여기에 끌어다 놓거나 클릭하여 선택하세요",
+    "uploading": "이력서 분석 중…",
+    "onlyPdfHint": "PDF 전용 · 최대 4MB",
+    "noLlmNeeded": "독립 실행형 검사 — LLM 설정이 필요 없습니다",
+    "resultPlaceholder": "이력서를 업로드하면 여기에 ATS 점수와 보고서가 표시됩니다",
+    "checkFailed": "검사 실패",
+    "scoreLabel": "ATS 총점",
+    "historyTitle": "이전 검사 기록",
+    "historyEmpty": "아직 검사 기록이 없습니다. 이력서를 업로드하여 ATS 점수를 확인하세요.",
+    "entry": "개 항목",
+    "entries": "개 항목",
+    "sourceManual": "직접 업로드",
+    "sourceFolderWatch": "폴더 감시",
+    "viewDetails": "상세 보기",
+    "delete": "삭제",
+    "deleteConfirmTitle": "이 ATS 검사 기록을 삭제하시겠습니까?",
+    "deleteConfirmDescription": "점수 기록과 보관된 PDF 사본이 영구적으로 삭제됩니다.",
+    "failedBadge": "실패",
+    "pendingBadge": "처리 중",
+    "backToChecks": "ATS 검사로 돌아가기",
+    "watcherHint": "팁: 폴더 감시 스크립트(scripts/ats_folder_watcher.py)를 실행하면 감시 폴더에 넣는 모든 PDF를 자동으로 검사합니다 — 점수는 \"폴더 감시\" 출처로 이 목록에 표시됩니다.",
+    "errors": {
+      "onlyPdf": "PDF 파일만 지원됩니다.",
+      "tooLarge": "파일이 4MB 제한을 초과합니다.",
+      "uploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요."
+    },
+    "report": {
+      "title": "ATS 점수 보고서",
+      "subScoresLabel": "구성 요소별 점수",
+      "subScores": {
+        "contact_info": "연락처 정보",
+        "section_completeness": "섹션 완성도",
+        "formatting_quality": "형식 품질",
+        "impact_quality": "임팩트와 성과",
+        "keyword_optimization": "키워드 최적화",
+        "readability_structure": "가독성과 구조"
+      },
+      "interpretations": {
+        "excellent": "훌륭함",
+        "strong": "좋음",
+        "moderate": "보통",
+        "weak": "약함",
+        "poor": "미흡",
+        "unknown": "알 수 없음"
+      },
+      "contactFieldsLabel": "감지된 연락처 필드",
+      "contactFields": {
+        "email": "이메일",
+        "phone": "전화",
+        "link": "링크",
+        "location": "위치",
+        "name": "이름"
+      },
+      "words": "단어 수",
+      "bullets": "불릿",
+      "dateRanges": "날짜 범위",
+      "skillsFound": "발견된 기술",
+      "quantified": "수치 성과",
+      "recommendationsLabel": "추천 사항"
     }
   }
 }

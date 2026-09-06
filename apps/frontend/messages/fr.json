@@ -30,7 +30,8 @@
     "unknown": "Inconnu",
     "keysCleared": "Clés API supprimées avec succès",
     "databaseReset": "Base de données réinitialisée avec succès",
-    "popupBlocked": "Fenêtre contextuelle bloquée. Veuillez autoriser les fenêtres contextuelles ou ouvrir cette URL manuellement : {url}"
+    "popupBlocked": "Fenêtre contextuelle bloquée. Veuillez autoriser les fenêtres contextuelles ou ouvrir cette URL manuellement : {url}",
+    "refresh": "Rafraîchir"
   },
   "home": {
     "brandLine1": "Resume",
@@ -45,7 +46,8 @@
     "settings": "Paramètres",
     "backToDashboard": "Retour au tableau de bord",
     "goToSettings": "Accéder aux paramètres",
-    "applicationTracker": "Suivi des candidatures"
+    "applicationTracker": "Suivi des candidatures",
+    "atsCheck": "Test ATS"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -1127,6 +1129,70 @@
       "moderate": "Correspondance modérée",
       "weak": "Correspondance faible",
       "poor": "Très faible correspondance"
+    }
+  },
+  "atsCheck": {
+    "title": "Test ATS du CV",
+    "subtitle": "Déposez un CV en PDF et obtenez son score ATS instantanément",
+    "uploadZone": "Glissez-déposez votre CV PDF ici, ou cliquez pour parcourir",
+    "uploading": "Analyse du CV…",
+    "onlyPdfHint": "PDF uniquement · 4 Mo max",
+    "noLlmNeeded": "Test autonome — aucune configuration de LLM requise",
+    "resultPlaceholder": "Votre score ATS et votre rapport apparaîtront ici après le dépôt d'un CV",
+    "checkFailed": "Échec du test",
+    "scoreLabel": "Score ATS total",
+    "historyTitle": "Tests précédents",
+    "historyEmpty": "Aucun test pour l'instant. Déposez un CV pour voir son score ATS.",
+    "entry": "entrée",
+    "entries": "entrées",
+    "sourceManual": "téléversement manuel",
+    "sourceFolderWatch": "surveillance de dossier",
+    "viewDetails": "Voir les détails",
+    "delete": "Supprimer",
+    "deleteConfirmTitle": "Supprimer ce test ATS ?",
+    "deleteConfirmDescription": "Cela supprime définitivement le score enregistré et sa copie PDF archivée.",
+    "failedBadge": "Échoué",
+    "pendingBadge": "En cours",
+    "backToChecks": "Retour aux tests ATS",
+    "watcherHint": "Astuce : lancez le script de surveillance (scripts/ats_folder_watcher.py) pour tester automatiquement chaque PDF déposé dans un dossier surveillé — les scores apparaissent dans cette liste avec la source « surveillance de dossier ».",
+    "errors": {
+      "onlyPdf": "Seuls les fichiers PDF sont pris en charge.",
+      "tooLarge": "Le fichier dépasse la limite de 4 Mo.",
+      "uploadFailed": "Échec du téléversement. Veuillez réessayer."
+    },
+    "report": {
+      "title": "Rapport de score ATS",
+      "subScoresLabel": "Scores par composant",
+      "subScores": {
+        "contact_info": "Coordonnées",
+        "section_completeness": "Complétude des sections",
+        "formatting_quality": "Qualité de mise en forme",
+        "impact_quality": "Impact et réalisations",
+        "keyword_optimization": "Optimisation des mots-clés",
+        "readability_structure": "Lisibilité et structure"
+      },
+      "interpretations": {
+        "excellent": "Excellent",
+        "strong": "Fort",
+        "moderate": "Moyen",
+        "weak": "Faible",
+        "poor": "Médiocre",
+        "unknown": "Inconnu"
+      },
+      "contactFieldsLabel": "Champs de contact détectés",
+      "contactFields": {
+        "email": "E-mail",
+        "phone": "Téléphone",
+        "link": "Lien",
+        "location": "Localisation",
+        "name": "Nom"
+      },
+      "words": "Mots",
+      "bullets": "Puces",
+      "dateRanges": "Plages de dates",
+      "skillsFound": "Compétences trouvées",
+      "quantified": "Quantifiés",
+      "recommendationsLabel": "Recommandations"
     }
   }
 }

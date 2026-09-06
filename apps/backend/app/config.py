@@ -1,6 +1,7 @@
 """Application configuration using pydantic-settings."""
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Literal
 
@@ -299,6 +300,13 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
 
+    # Standalone ATS check configuration. The archive dir receives a renamed
+    # copy ("{user}_Resume_{id}.pdf") of every checked resume; set an absolute
+    # path (or path relative to the backend dir) via ATS_ARCHIVE_DIR to store
+    # copies anywhere on disk.
+    ats_user_name: str = "User"
+    ats_archive_dir: Path | None = None
+
     @property
     def effective_cors_origins(self) -> list[str]:
         """CORS origins including frontend_base_url for production deployments."""
@@ -310,6 +318,38 @@ class Settings(BaseSettings):
 
     # Paths
     data_dir: Path = Path(__file__).parent.parent / "data"
+
+    @field_validator("ats_user_name", mode="before")
+    @classmethod
+    def sanitize_ats_user_name(cls, v: Any) -> str:
+        """Fall back to 'User' and strip filesystem-hostile characters.
+
+        The name is embedded in archived filenames, so spaces are kept (they
+        are safe) but path separators and control characters are removed.
+        """
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return "User"
+        name = str(v).strip()
+        name = re.sub(r"[\\/:*?\"<>|\x00-\x1f]", "", name)
+        return name or "User"
+
+    @field_validator("ats_archive_dir", mode="before")
+    @classmethod
+    def normalize_ats_archive_dir(cls, v: Any) -> Path | None:
+        """Treat blank env values as 'use the default data/ats_archive'."""
+        if v is None or (isinstance(v, str) and not str(v).strip()):
+            return None
+        return Path(str(v).strip())
+
+    @property
+    def ats_archive_path(self) -> Path:
+        """Directory where renamed resume PDF copies are archived."""
+        if self.ats_archive_dir is not None:
+            path = Path(self.ats_archive_dir)
+            # Relative paths resolve against the backend working directory
+            # parent (i.e. the data dir stays the default home for app files).
+            return path if path.is_absolute() else (Path.cwd() / path)
+        return self.data_dir / "ats_archive"
 
     @property
     def db_path(self) -> Path:
